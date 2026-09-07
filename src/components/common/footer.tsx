@@ -105,7 +105,7 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
           </ListItemDecorator >
           <ListItemContent>
            
-    <Typography level="body-sm" noWrap> Pioneer Mall - Shop No. PA41, Basement Floor. &#40; Opp. Mabiriizi Complex &#41;     </Typography>
+    <Typography level="body-sm" noWrap> Pioneer Mall - Shop No. PA07, Basement Floor. &#40; Opp. Mabiriizi Complex &#41;     </Typography>
         
           </ListItemContent>
         </ListItem>
@@ -250,6 +250,39 @@ opacity:.9
 </Box>
 <Typography component= 'h1' sx={{color:'gray',textAlign:'center', fontSize:{xs:'.9rem',md:'1rem'}}}>© {new Date().getFullYear()} | MINIFY GADGETS PHONES AND ACCESSORIES</Typography>
 </Box>
+
+      {/* Floating WhatsApp contact button — available across the site */}
+      <Box
+        component="a"
+        href="https://wa.me/256787808501?text=Hello%20Minify%20Gadgets!"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat with Minify Gadgets on WhatsApp"
+        title="Chat with Minify Gadgets on WhatsApp"
+        sx={{
+          position: 'fixed',
+          right: { xs: 16, sm: 24 },
+          bottom: { xs: 18, sm: 24 },
+          zIndex: 1500,
+          width: { xs: 54, sm: 60 },
+          height: { xs: 54, sm: 60 },
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#25D366',
+          color: 'white',
+          textDecoration: 'none',
+          boxShadow: '0 6px 20px rgba(0,0,0,.28)',
+          transition: 'transform .2s ease, box-shadow .2s ease',
+          '&:hover': {
+            transform: 'scale(1.08)',
+            boxShadow: '0 8px 26px rgba(0,0,0,.35)',
+          },
+        }}
+      >
+        <FaWhatsapp size={30} color="white" />
+      </Box>
     </Stack>
   )
 }

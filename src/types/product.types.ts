@@ -22,10 +22,13 @@ export interface ProductsState {
   products: Product[] | null;
   filteredProducts: Product[] | null;
   loading: boolean;
+  sourceFiltering: boolean;
   searchTerm: string;
   filters: {
     category: string;
     brand: string;
+    sourceCategory: string;
+    sourceSubcategory: string;
     minPrice: string | number;
     maxPrice: string | number;
     status: string;

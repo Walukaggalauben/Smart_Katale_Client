@@ -17,7 +17,12 @@ export const FetchAllProducts = async (limit: number) => {
             // Reset arrays
             All_Categories = [];
             All_Brands = [];
-      
+
+            // Reset category/brand mapping on every fetch.
+            Object.keys(categoryBrandMap).forEach((key) => {
+                delete categoryBrandMap[key];
+            });
+
             
             productsData.forEach((product: any) => {
                 const productCategories = product.categories ?? [];
@@ -68,6 +73,100 @@ export const FetchAllProducts = async (limit: number) => {
     } catch (error) {
         console.error('Error fetching products:', error);
         return { Categories: [], Brands: [], Products: [], Category_Brands_Map: [] };
+    }
+};
+
+export interface ProductTaxonomy {
+    [source: string]: {
+        [category: string]: string[];
+    };
+}
+
+const productTaxonomyCache = new Map<string, ProductTaxonomy>();
+const productTaxonomyRequests = new Map<
+    string,
+    Promise<ProductTaxonomy>
+>();
+
+export const FetchProductTaxonomy = async (
+    source = "mobileshop.ug"
+): Promise<ProductTaxonomy> => {
+    const cacheKey = source.trim().toLowerCase();
+
+    // Return the already-loaded taxonomy without another HTTP request.
+    const cached = productTaxonomyCache.get(cacheKey);
+
+    if (cached) {
+        return cached;
+    }
+
+    // Share an in-flight request if another component is already loading
+    // the same taxonomy.
+    const existingRequest = productTaxonomyRequests.get(cacheKey);
+
+    if (existingRequest) {
+        return existingRequest;
+    }
+
+    const request = axios.get(
+        `${API_URL}/products/taxonomy/?source=${encodeURIComponent(source)}`
+    )
+        .then((response) => {
+            if (response?.status === 200 && response.data) {
+                const data = response.data as ProductTaxonomy;
+
+                productTaxonomyCache.set(cacheKey, data);
+
+                return data;
+            }
+
+            return {};
+        })
+        .catch((error) => {
+            console.error("Error fetching product taxonomy:", error);
+            return {};
+        })
+        .finally(() => {
+            productTaxonomyRequests.delete(cacheKey);
+        });
+
+    productTaxonomyRequests.set(cacheKey, request);
+
+    return request;
+};
+
+export const FetchProductsBySourceFilter = async (
+    source = "mobileshop.ug",
+    sourceCategory = "",
+    sourceSubcategory = "",
+    limit = 5000
+) => {
+    try {
+        const params = new URLSearchParams();
+
+        params.set("source", source);
+        params.set("limit", String(limit));
+
+        if (sourceCategory) {
+            params.set("source_category", sourceCategory);
+        }
+
+        if (sourceSubcategory) {
+            params.set("source_subcategory", sourceSubcategory);
+        }
+
+        const response = await axios.get(
+            `${API_URL}/products/?${params.toString()}`
+        );
+
+        if (response?.status === 200 && Array.isArray(response.data)) {
+            return response.data;
+        }
+
+        return [];
+    } catch (error) {
+        console.error("Error fetching source-filtered products:", error);
+        return [];
     }
 };
 

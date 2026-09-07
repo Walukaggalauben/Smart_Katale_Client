@@ -1,25 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Card,
-
   CardContent,
   Typography,
   AspectRatio,
   Box,
   Chip,
   IconButton,
-  ButtonGroup, Button 
+  ButtonGroup,
+  Button,
+  Divider,
 } from '@mui/joy';
+import {
+  AddShoppingCart,
+  DeleteOutline,
+  ArrowForward,
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { FaTrash } from 'react-icons/fa';
 import { useToast } from '../../utils/toast-context';
 import { useAppDispatch, useAppSelector } from '../../types/hooks.types';
-import { addToCart, removeFromCart, updateQuantity} from '../../Slices/CartSlice';
+import {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+} from '../../Slices/CartSlice';
 import type { ProductCardProps } from '../../interfaces/products.interfaces';
 import type { CartItem } from '../../interfaces/cart.interfaces';
-
-
-
 
 const ProductCard: React.FC<ProductCardProps> = ({
   id,
@@ -33,295 +39,481 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { addToast } = useToast();
+
   const cartItems = useAppSelector((state) => state.cart.items);
- 
-  
-  // Find if product is in cart and get its quantity
-  const cartItem = cartItems.find((item:any) => item.id === id.toString());
+
+  const cartItem = cartItems.find(
+    (item: any) => item.id === id.toString()
+  );
+
   const [inCart, setInCart] = useState(!!cartItem);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 1);
-  
-  // Image states
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Update local state when cart changes
   useEffect(() => {
-    const currentCartItem = cartItems.find((item:any) => item.id === id.toString());
+    const currentCartItem = cartItems.find(
+      (item: any) => item.id === id.toString()
+    );
+
     setInCart(!!currentCartItem);
+
     if (currentCartItem) {
       setQuantity(currentCartItem.quantity);
+    } else {
+      setQuantity(1);
     }
   }, [cartItems, id]);
 
-  // Construct the full image URL
+  const numericPrice = Number(price) || 0;
+  const numericDiscount = Number(discount) || 0;
+  const priceOnRequest = numericPrice <= 0;
+
+  const originalPrice =
+    numericDiscount > 0
+      ? Math.round(numericPrice / (1 - numericDiscount / 100))
+      : numericPrice;
+
   const getImageUrl = () => {
     if (!image || image === 'products/default.jpg') {
       return '/placeholder-image.jpg';
     }
-    
-    if (image.startsWith('http://') || image.startsWith('https://')) {
+
+    if (
+      image.startsWith('http://') ||
+      image.startsWith('https://')
+    ) {
       return image;
     }
-    
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const cleanPath = image.replace(/^\.\.\/|^\.\/|^\//, '');
+
+    const baseUrl =
+      import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+    const cleanPath = image.replace(
+      /^\.\.\/|^\.\/|^\//,
+      ''
+    );
+
     return `${baseUrl}/media/${cleanPath}`;
   };
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error('Image failed to load:', getImageUrl());
+  const handleImageError = (
+    e: React.SyntheticEvent<HTMLImageElement, Event>
+  ) => {
     setImageError(true);
     e.currentTarget.src = '/placeholder-image.jpg';
-  };
-
-  const handleImageLoad = () => {
-    setImageLoaded(true);
   };
 
   const handleCardClick = () => {
     navigate(`/product-details/${id}`);
   };
 
-  const handleAddToCart = async () => {
-    try {
-      if (!name || !price) {
-        addToast({ message: 'Product information is incomplete', color: 'danger' });
-        return;
-      }
-
-      const cartItem: CartItem = {
-        id: id.toString(),
-        name: name,
-        price: price,
-        quantity: 1,
-        discount: discount || 0,
-        image: getImageUrl(),
-        
-      };
-
-      dispatch(addToCart(cartItem));
-      addToast({ message: 'Added to cart', color: 'success' });
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
-      addToast({ message: 'Failed to add to cart', color: 'danger' });
-    }
+  const stopCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
-  const handleIncreaseQuantity = () => {
+  const handleContactForPrice = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const message = encodeURIComponent(`Hello Minify Gadgets! I would like the current price and availability of ${name}.`);
+    window.open(`https://wa.me/256787808501?text=${message}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+
+    if (priceOnRequest) {
+      handleContactForPrice(e);
+      return;
+    }
+
+    if (!name || !numericPrice) {
+      addToast({
+        message: 'Product information is incomplete',
+        color: 'danger',
+      });
+      return;
+    }
+
+    const item: CartItem = {
+      id: id.toString(),
+      name,
+      price: numericPrice,
+      quantity: 1,
+      discount: numericDiscount,
+      image: getImageUrl(),
+    };
+
+    dispatch(addToCart(item));
+
+    addToast({
+      message: 'Added to cart',
+      color: 'success',
+    });
+  };
+
+  const handleIncreaseQuantity = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
     const newQuantity = quantity + 1;
+
     setQuantity(newQuantity);
-    dispatch(updateQuantity({ id: id.toString(), quantity: newQuantity }));
-    addToast({ message: 'Quantity increased', color: 'neutral' });
+
+    dispatch(
+      updateQuantity({
+        id: id.toString(),
+        quantity: newQuantity,
+      })
+    );
   };
 
-  const handleDecreaseQuantity = () => {
+  const handleDecreaseQuantity = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
     if (quantity <= 1) {
-  
-      handleRemoveFromCart();
-    } else {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      dispatch(updateQuantity({ id: id.toString(), quantity: newQuantity }));
-      addToast({ message: 'Quantity decreased', color: 'warning' });
+      handleRemoveFromCart(e);
+      return;
     }
+
+    const newQuantity = quantity - 1;
+
+    setQuantity(newQuantity);
+
+    dispatch(
+      updateQuantity({
+        id: id.toString(),
+        quantity: newQuantity,
+      })
+    );
   };
 
-  const handleRemoveFromCart = () => {
+  const handleRemoveFromCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
     dispatch(removeFromCart(id.toString()));
     setQuantity(1);
-    addToast({ message: 'Removed from cart', color: 'neutral' });
+
+    addToast({
+      message: 'Removed from cart',
+      color: 'neutral',
+    });
   };
+
+  const isBrandNew =
+    status.toLowerCase() === 'brand new';
 
   return (
     <Card
+      onClick={handleCardClick}
+      variant="outlined"
       sx={{
         width: '100%',
-        maxWidth: 280,
-        minWidth: 150,
-        margin: 'auto',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        cursor: 'pointer',
-        '&:hover': {
-          transform: 'scale(1.02)',
-          boxShadow: 'lg',
-        },
-        display: 'flex',
-        flexDirection: 'column',
+        maxWidth: 320,
+        minWidth: 0,
         height: '100%',
+        margin: 'auto',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        borderRadius: 'lg',
+        bgcolor: '#fff',
+        borderColor: '#e3e9e5',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.045)',
+        transition:
+          'transform .2s ease, box-shadow .2s ease, border-color .2s ease',
+
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: '0 12px 28px rgba(0,70,38,0.12)',
+          borderColor: '#9bcdb1',
+        },
       }}
     >
-      <AspectRatio ratio="1" sx={{ width: '100%' }}>
-        <img
-          src={imageError ? '/placeholder-image.jpg' : getImageUrl()}
-          alt={name || 'Product'}
-          loading="lazy"
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-          onClick={handleCardClick}
-          style={{
-            objectFit: 'cover',
-            width: '100%',
-            height: '100%',
-            opacity: imageLoaded ? 1 : 0.3,
-            transition: 'opacity 0.3s ease',
-          }}
-        />
-        {!imageLoaded && !imageError && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <Typography level="body-sm">Loading...</Typography>
-          </Box>
-        )}
-      </AspectRatio>
-
-  
-      {discount?discount > 0 && (
-        <Chip
-          size="md"
-          variant="solid"
-          color="danger"
+      {/* IMAGE */}
+      <Box
+        sx={{
+          position: 'relative',
+          bgcolor: '#f6f8f7',
+        }}
+      >
+        <AspectRatio
+          ratio="1"
           sx={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            zIndex: 1,
+            width: '100%',
+            bgcolor: '#f6f8f7',
           }}
         >
-          -{discount}%
-        </Chip>
-      ): null}
-      {status && status !== ''  && (
-        <Chip
-          size="md"
-          variant="soft"
-          color= {status=== 'Brand new' ? "success" : "danger"}
+          <img
+            src={
+              imageError
+                ? '/placeholder-image.jpg'
+                : getImageUrl()
+            }
+            alt={name || 'Product'}
+            loading="lazy"
+            onError={handleImageError}
+            onLoad={() => setImageLoaded(true)}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              display: 'block',
+              padding: '10px',
+              opacity: imageLoaded ? 1 : 0.35,
+              transition: 'opacity .25s ease',
+            }}
+          />
+        </AspectRatio>
+
+        {/* BADGES */}
+        <Box
           sx={{
             position: 'absolute',
             top: 10,
-            left: 8,
-            zIndex: 1,
+            left: 10,
+            right: 10,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            pointerEvents: 'none',
           }}
         >
-          {status}
-        </Chip>
-      )}
-     
-      {/* Product Info */}
-      <CardContent sx={{ 
-        bgcolor: 'rgba(0,0,0,0.7)', 
-        color: 'white',
-         p: 1.5,
-        flex: 1,
-      }}>
-        <Typography level="title-md" textColor="white" noWrap>
+          {status ? (
+            <Chip
+              size="sm"
+              variant="solid"
+              color={isBrandNew ? 'success' : 'neutral'}
+              sx={{
+                fontWeight: 800,
+                textTransform: 'capitalize',
+                boxShadow: 'sm',
+              }}
+            >
+              {status}
+            </Chip>
+          ) : (
+            <Box />
+          )}
+
+          {numericDiscount > 0 && !priceOnRequest && (
+            <Chip
+              size="sm"
+              variant="solid"
+              color="danger"
+              sx={{
+                fontWeight: 900,
+                boxShadow: 'sm',
+              }}
+            >
+              -{numericDiscount}%
+            </Chip>
+          )}
+        </Box>
+
+        {!imageLoaded && !imageError && (
+          <Typography
+            level="body-xs"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#8a9690',
+              pointerEvents: 'none',
+            }}
+          >
+            Loading...
+          </Typography>
+        )}
+      </Box>
+
+      {/* INFORMATION */}
+      <CardContent
+        sx={{
+          p: { xs: 1.25, sm: 1.5 },
+          gap: 0.55,
+          flex: 1,
+        }}
+      >
+        <Typography
+          level="title-md"
+          sx={{
+            fontWeight: 800,
+            lineHeight: 1.3,
+            minHeight: '2.6em',
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
           {name || 'Unnamed Product'}
         </Typography>
-        
-       
-        
-        {/* Description (truncated) */}
+
         {description && (
-          <Typography 
-            level="body-sm" 
-            textColor="neutral.300" 
+          <Typography
+            level="body-xs"
+            textColor="neutral.600"
             sx={{
+              minHeight: '2.6em',
+              lineHeight: 1.3,
               overflow: 'hidden',
-              textOverflow: 'ellipsis',
               display: '-webkit-box',
-              WebkitLineClamp: '2',
+              WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              minHeight: '40px',
             }}
           >
             {description}
           </Typography>
         )}
-        
-        {/* Price */}
-        <Typography level="title-lg" textColor="success.300" sx={{ mt: 1 }}>
-          UGX {price?.toLocaleString() || 'UGX: 0'}
-        </Typography>
+
+        <Divider sx={{ my: 0.7 }} />
+
+        {/* PRICE */}
+        <Box>
+          {numericDiscount > 0 && !priceOnRequest && (
+            <Typography
+              level="body-xs"
+              sx={{
+                color: '#8b9490',
+                textDecoration: 'line-through',
+                fontWeight: 600,
+              }}
+            >
+              UGX {originalPrice.toLocaleString()}
+            </Typography>
+          )}
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: 0.6,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Typography
+              level="title-lg"
+              sx={{
+                color: '#006b3c',
+                fontWeight: 900,
+                lineHeight: 1.15,
+              }}
+            >
+              {priceOnRequest ? 'Price on request' : `UGX ${numericPrice.toLocaleString()}`}
+            </Typography>
+
+            {numericDiscount > 0 && !priceOnRequest && (
+              <Typography
+                level="body-xs"
+                sx={{
+                  color: '#d32f2f',
+                  fontWeight: 800,
+                }}
+              >
+                Save {numericDiscount}%
+              </Typography>
+            )}
+          </Box>
+        </Box>
       </CardContent>
 
-      <Box sx={{ p: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+      {/* CART AREA */}
+      <Box
+        onClick={stopCardClick}
+        sx={{
+          px: 1.25,
+          pb: 1.25,
+        }}
+      >
         {inCart ? (
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { md: 'row', xs: 'column' },
-            alignItems: 'center', 
-            gap: 1,
-            justifyContent: 'space-between'
-          }}>
-            <ButtonGroup 
-              size="sm" 
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+            }}
+          >
+            <ButtonGroup
+              size="sm"
               variant="outlined"
-              sx={{ flex: 1 }}
+              sx={{
+                flex: 1,
+                '& button': {
+                  fontWeight: 800,
+                },
+              }}
             >
               <Button
-                variant='solid'
-                color='danger'
+                color="danger"
+                variant="soft"
                 onClick={handleDecreaseQuantity}
-                disabled={quantity <= 0}
-                sx={{ minWidth: 36 }}
+                sx={{ minWidth: 38 }}
               >
-                -
+                −
               </Button>
-              <Button 
-                disabled 
-                sx={{ 
+
+              <Button
+                disabled
+                sx={{
+                  flex: 1,
                   minWidth: 40,
-                  fontWeight: 'bold',
-                  bgcolor: 'background.level1'
+                  color: '#173b2b !important',
                 }}
               >
                 {quantity}
               </Button>
-              <Button 
-                variant='solid' 
-                color='success'
+
+              <Button
+                color="success"
+                variant="soft"
                 onClick={handleIncreaseQuantity}
-                sx={{ minWidth: 36 }}
+                sx={{ minWidth: 38 }}
               >
                 +
               </Button>
             </ButtonGroup>
 
-            <IconButton 
-              color="danger" 
-              variant="plain"
-              onClick={handleRemoveFromCart}
+            <IconButton
+              color="danger"
+              variant="soft"
               size="sm"
-              sx={{ 
-                '&:hover': { 
-                  bgcolor: 'danger.softBg',
-                  color: 'danger.plainColor'
-                }
+              onClick={handleRemoveFromCart}
+              sx={{
+                borderRadius: 'md',
               }}
             >
-              <FaTrash size={16} />
+              <DeleteOutline />
             </IconButton>
           </Box>
         ) : (
-          <Button 
-            variant='soft' 
-            color='success' 
-            onClick={handleAddToCart}
+          <Button
+            variant="solid"
+            color="success"
             fullWidth
+            startDecorator={priceOnRequest ? undefined : <AddShoppingCart />}
+            endDecorator={
+              <ArrowForward
+                sx={{
+                  fontSize: 17,
+                  transition: 'transform .2s ease',
+                }}
+              />
+            }
+            onClick={priceOnRequest ? handleContactForPrice : handleAddToCart}
             sx={{
-              fontWeight: 'md',
+              minHeight: 42,
+              borderRadius: 'md',
+              fontWeight: 900,
+              bgcolor: '#006b3c',
               '&:hover': {
-                bgcolor: 'success.softHoverBg',
-              }
+                bgcolor: '#00582f',
+              },
+              '&:hover svg:last-child': {
+                transform: 'translateX(3px)',
+              },
             }}
           >
-            Add to Cart
+            {priceOnRequest ? 'Check Availability' : 'Add to Cart'}
           </Button>
         )}
       </Box>

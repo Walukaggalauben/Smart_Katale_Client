@@ -71,7 +71,8 @@ export default function PaymentCardForm({ cardToEdit, onSuccess, onCancel }: Pay
           is_default: formData.is_default === 'true'
         },
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(sessionStorage.getItem('access_token') ? { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } : {})
         }
       });
 

@@ -1,5 +1,10 @@
 import { API_URL } from "../configs";
 import axios from 'axios'
+
+const authConfig = () => {
+  const token = sessionStorage.getItem('access_token');
+  return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
 import type {CustomerAddressCardsProps, CustomerPaymnentCardsProps } from "../interfaces/users.interfaces";
 import type { OrderDataProps, OrdersProps } from "../interfaces/orders.interfaces";
 import type { ProductDataProps } from "../interfaces/products.interfaces";
@@ -60,11 +65,11 @@ export const FetchCustomerData = async(id:number | null |string) => {
 
 
     ] = await Promise.allSettled([
-      axios.get(`${API_URL}/accounts/${id}/card-details/`),
+      axios.get(`${API_URL}/accounts/${id}/card-details/`, authConfig()),
 
-      axios.get(`${API_URL}/accounts/${id}/address-details/`),
+      axios.get(`${API_URL}/accounts/${id}/address-details/`, authConfig()),
 
-      axios.get(`${API_URL}/accounts/${id}/order`),
+      axios.get(`${API_URL}/accounts/${id}/order/`, authConfig()),
 
    
     ]);

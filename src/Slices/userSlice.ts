@@ -1,6 +1,9 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {  UserLogin, UserRegister } from "../api/auth";
 
+const normalizeFrontendRole = (role: string | null | undefined) =>
+  role === 'superuser' ? 'manager' : (role ?? null);
+
 interface UserState {
   id: string | number | null;
   first_name: string | null;
@@ -23,6 +26,7 @@ const loadUserFromStorage = (): Partial<UserState> => {
       const userData = JSON.parse(userStr);
       return {
         ...userData,
+        role: normalizeFrontendRole(userData.role),
         is_authenticated: true,
       };
     }
@@ -115,7 +119,7 @@ const userSlice = createSlice({
       state.last_name = action.payload?.last_name;
       state.email = action.payload?.email;
       state.phone_number = action.payload?.phone_number;
-      state.role = action.payload?.role;
+      state.role = normalizeFrontendRole(action.payload?.role);
       state.message = action.payload?.message;
       state.error = null;
       state.is_authenticated = true;
@@ -128,7 +132,7 @@ const userSlice = createSlice({
         first_name: action.payload?.first_name,
         last_name: action.payload?.last_name,
         email: action.payload?.email,
-        role: action.payload?.role,
+        role: normalizeFrontendRole(action.payload?.role),
         phone_number: action.payload?.phone_number,
       }));
       
@@ -154,7 +158,7 @@ const userSlice = createSlice({
         state.last_name = action.payload?.last_name;
         state.email = action.payload?.email;
         state.phone_number = action.payload?.phone_number;
-        state.role = action.payload?.role;
+        state.role = normalizeFrontendRole(action.payload?.role);
         state.message = action.payload?.message;
         state.error = null;
         state.is_authenticated = true;
@@ -166,7 +170,7 @@ const userSlice = createSlice({
           first_name: action.payload?.first_name,
           last_name: action.payload?.last_name,
           email: action.payload?.email,
-          role: action.payload?.role,
+          role: normalizeFrontendRole(action.payload?.role),
           phone_number: action.payload?.phone_number,
         }));
         

@@ -30,7 +30,8 @@ export default function Profile() {
       setIsFetching(true);
       try {
         
-        const response = await axios.get(`${API_URL}/accounts/${userId}/details/`);
+        const token = sessionStorage.getItem('access_token');
+        const response = await axios.get(`${API_URL}/accounts/${userId}/details/`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
   
         if (response.data) {
           console.log(response.data)
@@ -79,11 +80,12 @@ export default function Profile() {
       }
 
       const response = await axios.put(
-        `${API_URL}/accounts/${userId}/details`,
+        `${API_URL}/accounts/${userId}/details/`,
         updateData,
         {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            ...(sessionStorage.getItem('access_token') ? { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } : {})
           }
         }
       );

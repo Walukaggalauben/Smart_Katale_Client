@@ -1,6 +1,11 @@
 // Slices/productSlice.ts
 import { type PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { FetchAllProducts, SearchProduct } from '../api/products';
+import {
+  FetchAllProducts,
+  FetchProductTaxonomy,
+  FetchProductsBySourceFilter,
+  SearchProduct
+} from '../api/products';
 import type { FetchProductsResponse, ProductsState, Product } from '../types/product.types';
 import { API_URL } from '../configs';
 import axios from 'axios';
@@ -13,10 +18,13 @@ const Initial: ProductsState = {
   products: null,
   filteredProducts: null,
   loading: false,
+  sourceFiltering: false,
   searchTerm: '',
   filters: {
     category: '',
     brand: '',
+    sourceCategory: '',
+    sourceSubcategory: '',
     minPrice: '',
     maxPrice: '',
     status: '',
@@ -24,10 +32,63 @@ const Initial: ProductsState = {
   sortBy: 'rating-desc'
 };
 
-export const FetchAllProductsThunk = createAsyncThunk('all-products/fetch', async(limit:number) => {
-  const response =  await FetchAllProducts(limit);
-  return response;
-});
+export const FetchProductTaxonomyThunk = createAsyncThunk(
+  'products/taxonomy',
+  async (source: string = 'mobileshop.ug') => {
+    return await FetchProductTaxonomy(source);
+  }
+);
+
+export const FetchAllProductsThunk = createAsyncThunk(
+  'all-products/fetch',
+  async (limit: number) => {
+    const response = await FetchAllProducts(limit);
+    return response;
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as {
+        products: ProductsState;
+      };
+
+      // Do not refetch the main catalogue if it is
+      // already loaded in Redux.
+      if (
+        Array.isArray(state.products?.products) &&
+        state.products.products.length > 0
+      ) {
+        return false;
+      }
+
+      // Also prevent another request while the first
+      // catalogue request is still running.
+      if (state.products?.loading) {
+        return false;
+      }
+
+      return true;
+    },
+  }
+);
+
+export const FetchSourceFilteredProductsThunk = createAsyncThunk(
+  'products/source-filter',
+  async ({
+    source = 'mobileshop.ug',
+    sourceCategory = '',
+    sourceSubcategory = ''
+  }: {
+    source?: string;
+    sourceCategory?: string;
+    sourceSubcategory?: string;
+  }) => {
+    return await FetchProductsBySourceFilter(
+      source,
+      sourceCategory,
+      sourceSubcategory
+    );
+  }
+);
 
 export const SearchProductThunk = createAsyncThunk(
   'products/search', 
@@ -108,35 +169,84 @@ const Products = createSlice({
       
       let results = [...state.products];
 
-  
       if (state.searchTerm && state.searchTerm.trim() !== '') {
         const term = state.searchTerm.toLowerCase().trim();
         results = results.filter(item => {
-          const name = getSafeString(item.name).toLowerCase();
-          const description = getSafeString(item.description).toLowerCase();
-          const category = getSafeString(item.category).toLowerCase();
-          const brand = getSafeString(item.brand).toLowerCase();
-        
-          return name.includes(term) || 
-                 description.includes(term) || 
-                 category.includes(term) || 
-                 brand.includes(term);
+          const searchable = [
+            item.name, item.description, item.category, item.brand,
+            item.source_category, item.source_subcategory, item.source,
+            item.normalized_brand, item.normalized_model, item.normalized_storage,
+            item.normalized_ram, item.normalized_condition,
+            ...(Array.isArray(item.categories) ? item.categories : []),
+            ...(Array.isArray(item.brands) ? item.brands : []),
+          ].map(getSafeString).join(' ').toLowerCase();
+
+          return searchable.includes(term);
         });
       }
 
-        if (state.filters.category && state.filters.category !== '') {
-    const filterCategory: string = String(state.filters.category);
-    results = results.filter((item: Product): boolean => {
-      return Array.isArray(item.categories) && item.categories.includes(filterCategory);
-    });
-  }
+      // Source taxonomy filters.
+      if (
+        state.filters.sourceCategory &&
+        state.filters.sourceCategory !== ''
+      ) {
+        const sourceCategory = String(
+          state.filters.sourceCategory
+        );
 
-  if (state.filters.brand && state.filters.brand !== '') {
-    const filterBrand: string = String(state.filters.brand);
-    results = results.filter((item: Product): boolean => {
-      return Array.isArray(item.brands) && item.brands.includes(filterBrand);
-    });
-  }
+        results = results.filter((item: Product) => {
+          return getSafeString(
+            item.source_category
+          ) === sourceCategory;
+        });
+
+      }
+
+      if (
+        state.filters.sourceSubcategory &&
+        state.filters.sourceSubcategory !== ''
+      ) {
+        const sourceSubcategory = String(
+          state.filters.sourceSubcategory
+        );
+
+        results = results.filter((item: Product) => {
+          return getSafeString(
+            item.source_subcategory
+          ) === sourceSubcategory;
+        });
+
+      }
+
+      // Legacy category/brand filters.
+      // Do not apply them when the new source taxonomy filters
+      // are active, because MobileShop uses its own taxonomy:
+      // source_category and source_subcategory.
+      if (
+        !state.filters.sourceCategory &&
+        !state.filters.sourceSubcategory &&
+        state.filters.category &&
+        state.filters.category !== ''
+      ) {
+        const filterCategory: string = String(state.filters.category);
+        results = results.filter((item: Product): boolean => {
+          return Array.isArray(item.categories) &&
+            item.categories.includes(filterCategory);
+        });
+      }
+
+      if (
+        !state.filters.sourceCategory &&
+        !state.filters.sourceSubcategory &&
+        state.filters.brand &&
+        state.filters.brand !== ''
+      ) {
+        const filterBrand: string = String(state.filters.brand);
+        results = results.filter((item: Product): boolean => {
+          return Array.isArray(item.brands) &&
+            item.brands.includes(filterBrand);
+        });
+      }
 
       if (state.filters.minPrice && state.filters.minPrice !== '') {
         const min = Number(state.filters.minPrice);
@@ -195,9 +305,11 @@ const Products = createSlice({
       state.filters = {
         category: '',
         brand: '',
+        sourceCategory: '',
+        sourceSubcategory: '',
         minPrice: '',
         maxPrice: '',
-        status:''
+        status: ''
       };
       state.searchTerm = '';
       state.sortBy = 'rating-desc';
@@ -214,15 +326,15 @@ const Products = createSlice({
       
       const term = action.payload.toLowerCase().trim();
       const results = state.products.filter(item => {
-        const name = getSafeString(item.name).toLowerCase();
-        const description = getSafeString(item.description).toLowerCase();
-        const category = getSafeString(item.category).toLowerCase();
-        const brand = getSafeString(item.brand).toLowerCase();
-        
-        return name.includes(term) || 
-               description.includes(term) || 
-               category.includes(term) || 
-               brand.includes(term);
+        const searchable = [
+          item.name, item.description, item.category, item.brand,
+          item.source_category, item.source_subcategory, item.source,
+          item.normalized_brand, item.normalized_model, item.normalized_storage,
+          item.normalized_ram, item.normalized_condition,
+          ...(Array.isArray(item.categories) ? item.categories : []),
+          ...(Array.isArray(item.brands) ? item.brands : []),
+        ].map(getSafeString).join(' ').toLowerCase();
+        return searchable.includes(term);
       });
       
       state.filteredProducts = results;
@@ -268,7 +380,11 @@ const Products = createSlice({
                 categories: product.categories || [],
                 brands: product.brands || [],
                 category: product.categories?.[0] || null,
-                brand: product.brands?.[0] || null
+                brand: product.brands?.[0] || null,
+                source: product.source || '',
+                source_id: product.source_id || '',
+                source_category: product.source_category || '',
+                source_subcategory: product.source_subcategory || ''
             }));
             
             state.filteredProducts = [...state.products];
@@ -284,6 +400,51 @@ const Products = createSlice({
         console.error('Failed to fetch products:', action.error);
       })
       
+      // Handle source taxonomy filtering.
+      // The main state.products catalogue remains untouched.
+      // Only filteredProducts is replaced by the source-specific
+      // API result.
+      .addCase(FetchSourceFilteredProductsThunk.pending, (state) => {
+        state.sourceFiltering = true;
+      })
+      .addCase(FetchSourceFilteredProductsThunk.fulfilled, (state, action) => {
+        state.sourceFiltering = false;
+
+        if (Array.isArray(action.payload)) {
+          state.filteredProducts = action.payload.map((product: any) => ({
+            ...product,
+            id: product.id || '',
+            name: String(product.name || ''),
+            price: Number(product.price) || 0,
+            description: String(product.description || ''),
+            image_url: product.image_url || '',
+            rating: Number(product.rating) || 0,
+            reviews_count: Number(product.reviews_count) || 0,
+            stock: Number(product.stock) || 0,
+            created_at: product.created_at || new Date().toISOString(),
+            updated_at: product.updated_at || new Date().toISOString(),
+            categories: product.categories || [],
+            brands: product.brands || [],
+            category: product.categories?.[0] || null,
+            brand: product.brands?.[0] || null,
+            source: product.source || '',
+            source_id: product.source_id || '',
+            source_category: product.source_category || '',
+            source_subcategory: product.source_subcategory || ''
+          }));
+        } else {
+          state.filteredProducts = [];
+        }
+      })
+      .addCase(FetchSourceFilteredProductsThunk.rejected, (state, action) => {
+        state.sourceFiltering = false;
+        console.error(
+          'Failed to fetch source-filtered products:',
+          action.error
+        );
+        state.filteredProducts = [];
+      })
+
       // Handle SearchProductThunk states
       .addCase(SearchProductThunk.pending, (state) => {
         state.loading = true;
@@ -307,7 +468,11 @@ const Products = createSlice({
             categories: product.categories || [],
             brands: product.brands || [],
             category: product.categories?.[0] || null,
-            brand: product.brands?.[0] || null
+            brand: product.brands?.[0] || null,
+            source: product.source || '',
+            source_id: product.source_id || '',
+            source_category: product.source_category || '',
+            source_subcategory: product.source_subcategory || ''
           }));
           
           state.filteredProducts = [...state.products];

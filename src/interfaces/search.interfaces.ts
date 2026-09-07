@@ -15,17 +15,28 @@ export interface SearchInputProps {
   categories: string[];
   totalResults: number;
   onClearFilters: () => void;
-  sortOptions: Array<{ field: string; label: string; order: 'asc' | 'desc' }>;
+  sortOptions: Array<{
+    field: string;
+    label: string;
+    order: 'asc' | 'desc';
+  }>;
   itemsPerPageOptions: number[];
   hideFilters?: boolean;
   onSearch?: () => void;
 }
 
-// Define suggestion types
+/*
+ * Search dropdown suggestions are now PRODUCT ONLY.
+ *
+ * We intentionally do not use separate
+ * product / brand / category suggestion types.
+ */
 export interface SearchSuggestion {
   id: string | number;
   label: string;
-  type: 'product' | 'category' | 'brand';
+  type: 'product';
   value: string;
+  productId: string | number;
+  image?: string;
+  price?: number;
 }
-
