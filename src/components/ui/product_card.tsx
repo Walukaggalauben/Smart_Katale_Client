@@ -15,6 +15,7 @@ import {
   AddShoppingCart,
   DeleteOutline,
   ArrowForward,
+  CompareArrows,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../utils/toast-context';
@@ -26,6 +27,7 @@ import {
 } from '../../Slices/CartSlice';
 import type { ProductCardProps } from '../../interfaces/products.interfaces';
 import type { CartItem } from '../../interfaces/cart.interfaces';
+import { addToCompare, removeFromCompare } from '../../Slices/compareSlice';
 
 const ProductCard: React.FC<ProductCardProps> = ({
   id,
@@ -35,12 +37,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
   discount,
   description,
   status = '',
+  rating = 0,
+  reviews_count = 0,
+  views_count = 0,
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { addToast } = useToast();
 
   const cartItems = useAppSelector((state) => state.cart.items);
+  const compareItems = useAppSelector((state) => state.compare.items);
 
   const cartItem = cartItems.find(
     (item: any) => item.id === id.toString()
@@ -49,7 +55,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [inCart, setInCart] = useState(!!cartItem);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 1);
   const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const inCompare = compareItems.some((item) => String(item.id) === String(id));
 
   useEffect(() => {
     const currentCartItem = cartItems.find(
@@ -106,6 +112,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleCardClick = () => {
     navigate(`/product-details/${id}`);
+  };
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (inCompare) {
+      dispatch(removeFromCompare(id));
+      addToast({ color: 'neutral', message: 'Removed from compare' });
+      return;
+    }
+    if (compareItems.length >= 3) {
+      addToast({ color: 'warning', message: 'Compare up to 3 products at a time' });
+      return;
+    }
+    dispatch(addToCompare({ id, name, price, image_url: image, discount, rating, reviews_count, views_count, status }));
+    addToast({ color: 'success', message: 'Added to compare' });
   };
 
   const stopCardClick = (e: React.MouseEvent) => {
@@ -234,6 +255,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
           bgcolor: '#f6f8f7',
         }}
       >
+        <IconButton
+          size="sm"
+          variant={inCompare ? 'solid' : 'soft'}
+          color="success"
+          onClick={handleCompare}
+          aria-label="Compare product"
+          sx={{ position: 'absolute', top: 10, right: 10, zIndex: 4, borderRadius: '50%' }}
+        >
+          <CompareArrows sx={{ fontSize: 18 }} />
+        </IconButton>
+
         <AspectRatio
           ratio="1"
           sx={{
@@ -250,15 +282,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
             alt={name || 'Product'}
             loading="lazy"
             onError={handleImageError}
-            onLoad={() => setImageLoaded(true)}
             style={{
               width: '100%',
               height: '100%',
               objectFit: 'contain',
               display: 'block',
               padding: '10px',
-              opacity: imageLoaded ? 1 : 0.35,
-              transition: 'opacity .25s ease',
+              opacity: 1,
             }}
           />
         </AspectRatio>
@@ -308,22 +338,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </Box>
 
-        {!imageLoaded && !imageError && (
-          <Typography
-            level="body-xs"
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#8a9690',
-              pointerEvents: 'none',
-            }}
-          >
-            Loading...
-          </Typography>
-        )}
+
       </Box>
 
       {/* INFORMATION */}
@@ -364,6 +379,35 @@ const ProductCard: React.FC<ProductCardProps> = ({
           >
             {description}
           </Typography>
+        )}
+
+        {(Number(rating) > 0 || Number(reviews_count) > 0 || Number(views_count) > 0) && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              flexWrap: 'wrap',
+              color: 'text.secondary',
+              fontSize: '0.72rem',
+            }}
+          >
+            {Number(rating) > 0 && (
+              <Typography level="body-xs" sx={{ fontWeight: 800, color: '#b7791f' }}>
+                ★ {Number(rating).toFixed(1)}
+              </Typography>
+            )}
+            {Number(reviews_count) > 0 && (
+              <Typography level="body-xs" sx={{ color: 'text.secondary' }}>
+                {Number(reviews_count).toLocaleString()} reviews
+              </Typography>
+            )}
+            {Number(views_count) > 0 && (
+              <Typography level="body-xs" sx={{ color: 'text.secondary' }}>
+                {Number(views_count).toLocaleString()} views
+              </Typography>
+            )}
+          </Box>
         )}
 
         <Divider sx={{ my: 0.7 }} />

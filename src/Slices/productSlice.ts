@@ -266,7 +266,7 @@ const Products = createSlice({
       if (state.filters.status && state.filters.status !== '') {
         const status = String(state.filters.status);
         if (status) {
-          results = results.filter(item => getSafeString(item.status) == status);
+          results = results.filter(item => getSafeString(item.status || item.condition || item.normalized_condition) === status);
         }
       }
 

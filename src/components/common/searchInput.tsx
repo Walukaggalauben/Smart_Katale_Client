@@ -67,9 +67,11 @@ const SearchInput: React.FC<SearchInputProps> = ({
   const [taxonomy, setTaxonomy] = useState<{
     categories: string[];
     subcategories: string[];
+    conditions: string[];
   }>({
     categories: [],
     subcategories: [],
+    conditions: [],
   });
 
   useEffect(() => {
@@ -102,7 +104,11 @@ const SearchInput: React.FC<SearchInputProps> = ({
       )
     ).sort((a, b) => a.localeCompare(b));
 
-    setTaxonomy({ categories, subcategories });
+    const conditions = Array.from(new Set(
+      sourceProducts.map((product: any) => String(product.status || product.condition || product.normalized_condition || '').trim()).filter(Boolean)
+    )).sort((a, b) => a.localeCompare(b));
+
+    setTaxonomy({ categories, subcategories, conditions });
   }, [products, filters.sourceCategory]);
 
   /*
@@ -813,7 +819,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
                         fontWeight: 700,
                       }}
                     >
-                      Brand
+                      Subcategory
                     </FormLabel>
 
                     <Select
@@ -821,7 +827,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
                       value={
                         filters.sourceSubcategory || null
                       }
-                      placeholder="All brands"
+                      placeholder="All subcategories"
                       onChange={(_, value) => {
                         setFilters({
                           ...filters,
@@ -839,6 +845,28 @@ const SearchInput: React.FC<SearchInputProps> = ({
                           </Option>
                         )
                       )}
+                    </Select>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      Condition
+                    </FormLabel>
+
+                    <Select
+                      size="sm"
+                      value={filters.status || null}
+                      placeholder="All conditions"
+                      onChange={(_, value) => setFilters({ ...filters, status: value || '' })}
+                    >
+                      {taxonomy.conditions.map((condition) => (
+                        <Option key={condition} value={condition}>{condition}</Option>
+                      ))}
                     </Select>
                   </FormControl>
 

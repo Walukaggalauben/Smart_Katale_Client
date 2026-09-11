@@ -4,6 +4,8 @@ import Home from "./layouts/main_layout";
 import Shop from "./pages/shop";
 import Cart from "./pages/Cart";
 import ProductDetails from "./pages/product_details";
+import Compare from "./pages/compare";
+import Iphone18Series from "./pages/iphone_18_series";
 import OrderSuccess from "./pages/order_success";
 import MyProfile from "./pages/my_profile";
 import ManagerDashBoard from "./pages/manager_home";
@@ -34,6 +36,7 @@ function App() {
     <Routes>
       {/* Public routes - accessible to everyone */}
       <Route path="/order-success" element={<OrderSuccess />} />
+      <Route path="/iphone-18-series" element={<Iphone18Series />} />
 
       {/* Main app routes with Home layout */}
       <Route 
@@ -54,6 +57,7 @@ function App() {
         <Route index element={<Shop />} />
         <Route path="shop" element={<Shop />} />
         <Route path="cart" element={<Cart />} />
+        <Route path="compare" element={<Compare />} />
         <Route path="product-details/:id" element={<ProductDetails />} />
       </Route>
 

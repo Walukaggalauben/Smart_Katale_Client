@@ -186,6 +186,19 @@ return response?.data
     }
 };
 
+export const RecordProductView = async (product_id: string | number) => {
+    try {
+        const response = await axios.post(`${API_URL}/products/${product_id}/view/`);
+        if (response?.status === 200) {
+            return Number(response.data?.views_count) || 0;
+        }
+    } catch (error) {
+        // View tracking must never block product browsing.
+        console.debug('Unable to record product view:', error);
+    }
+    return null;
+};
+
 export const FetchProductData = async (product_id: string|number) : Promise<ProductDetailsProps | null> => {
     try {
         const response = await axios.get(`${API_URL}/products/${product_id}`);

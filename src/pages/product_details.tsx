@@ -34,6 +34,7 @@ import {
 import type { Product } from '../types/product.types';
 import type { CartItem } from '../interfaces/cart.interfaces';
 import ProductCard from '../components/ui/product_card';
+import { RecordProductView } from '../api/products';
 
 const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -129,13 +130,33 @@ const ProductDetails: React.FC = () => {
     }
 
     return [
-      product.image_url,
+      product.image_url || product.source_image_url,
       ...(product.additional_images || []),
     ].filter(Boolean) as string[];
   }, [product]);
 
   useEffect(() => {
     setSelectedImage(0);
+
+    if (product?.id) {
+      try {
+        const key = 'minify_recent_products';
+        const current: string[] = JSON.parse(localStorage.getItem(key) || '[]');
+        const next = [String(product.id), ...current.filter((item) => String(item) !== String(product.id))].slice(0, 12);
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        // Browsing history is optional.
+      }
+      RecordProductView(product.id).then((viewCount) => {
+        if (viewCount !== null) {
+          setProduct((current) =>
+            current
+              ? { ...current, views_count: viewCount }
+              : current
+          );
+        }
+      });
+    }
   }, [product?.id]);
 
   const price = Number(product?.price || 0);
@@ -628,6 +649,15 @@ const ProductDetails: React.FC = () => {
               >
                 {product.reviews_count || 0} reviews
               </Typography>
+
+              {Number(product.views_count) > 0 && (
+                <Typography
+                  level="body-sm"
+                  sx={{ color: 'text.secondary' }}
+                >
+                  {Number(product.views_count).toLocaleString()} views
+                </Typography>
+              )}
             </Box>
 
             <Box sx={{ mt: 3 }}>
@@ -1051,10 +1081,13 @@ const ProductDetails: React.FC = () => {
                   id={related.id}
                   name={related.name}
                   price={related.price}
-                  image={related.image_url}
+                  image={related.image_url || related.source_image_url}
+                  rating={related.rating}
+                  reviews_count={related.reviews_count}
+                  views_count={related.views_count}
                   discount={related.discount}
                   description={related.description}
-                  status={related.status}
+                  status={related.status || related.condition}
                 />
               </Grid>
             ))}

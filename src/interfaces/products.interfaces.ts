@@ -14,6 +14,8 @@ export interface ProductCardProps {
   status?:string;
   description?: string;
   rating?: number;
+  reviews_count?: number;
+  views_count?: number;
 }
 
 export interface ProductDetailsProps {

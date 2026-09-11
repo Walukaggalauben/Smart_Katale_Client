@@ -537,10 +537,13 @@ const Shop: React.FC = () => {
                     id={item.id}
                     name={item.name}
                     price={item.price}
-                    image={item.image_url}
+                    image={item.image_url || item.source_image_url}
                     discount={item.discount}
+                    rating={item.rating}
+                    reviews_count={item.reviews_count}
+                    views_count={item.views_count}
                     description={item.description}
-                    status={item.status}
+                    status={item.status || item.condition}
                   />
                 </Grid>
               ))}

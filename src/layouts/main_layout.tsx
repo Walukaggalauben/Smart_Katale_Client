@@ -2,12 +2,13 @@ import Footer from '../components/common/footer';
 import Header from '../components/common/header';
 import { Outlet } from 'react-router-dom';
 import HorizontalProductSwiper from '../components/common/product_carousel';
-import { Box, Button, CircularProgress, Typography } from '@mui/joy';
+import { Box, Button, CircularProgress, Typography, Chip } from '@mui/joy';
 import { useEffect, useState } from 'react';
 import { FetchAllProductsThunk } from '../Slices/productSlice';
 import { useAppDispatch, useAppSelector } from '../types/hooks.types';
 import DynamicBreadcrumb from '../components/ui/bread_crumb';
 import { FaWhatsapp } from 'react-icons/fa';
+import SmartSuggestions from '../components/common/smart_suggestions';
 
 
 
@@ -268,6 +269,44 @@ const Home = () => {
             </Button>
           </Box>
         </Box>
+
+        {/* =====================================================
+            IPHONE 18 PRO PRE-ORDER
+        ===================================================== */}
+        <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 1.5, md: 4 }, mb: 6 }}>
+          <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: { xs: '22px', md: '30px' }, bgcolor: '#0b0d0c', color: '#fff', px: { xs: 2.5, sm: 4, md: 6 }, py: { xs: 3.5, md: 5 }, boxShadow: '0 16px 45px rgba(0,0,0,.16)' }}>
+            <Box sx={{ position: 'absolute', width: 260, height: 260, borderRadius: '50%', bgcolor: 'rgba(255,255,255,.06)', right: -80, top: -100 }} />
+            <Chip color="danger" variant="solid" sx={{ fontWeight: 900 }}>PRE-ORDER</Chip>
+            <Typography level="h2" sx={{ color: '#fff', fontWeight: 950, mt: 1.5, fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3.2rem' } }}>iPhone 18 Pro Series</Typography>
+            <Typography level="body-lg" sx={{ color: 'rgba(255,255,255,.78)', maxWidth: 760, mt: 1 }}>iPhone 18 Pro and iPhone 18 Pro Max. A20 Pro, variable-aperture 48MP Fusion Main camera, and the next generation of Apple Intelligence.</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2.2 }}>
+              {['256GB', '512GB', '1TB', '2TB'].map((storage) => <Chip key={storage} variant="soft" sx={{ bgcolor: 'rgba(255,255,255,.1)', color: '#fff' }}>{storage}</Chip>)}
+              {['Black', 'Silver', 'Glacier', 'Burgundy'].map((color) => <Chip key={color} variant="soft" sx={{ bgcolor: 'rgba(255,255,255,.1)', color: '#fff' }}>{color}</Chip>)}
+            </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', mt: 3 }}>
+              <Button size="lg" color="success" onClick={handleWhatsAppOrder} sx={{ borderRadius: '999px', fontWeight: 900 }}>Reserve on WhatsApp</Button>
+              <Typography level="body-sm" sx={{ color: 'rgba(255,255,255,.68)' }}>Pre-orders open September 12 • Availability starts September 18</Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* =====================================================
+            OFFICIAL PRODUCT VIDEOS
+        ===================================================== */}
+        <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 1.5, md: 4 }, mb: 6 }}>
+          <Typography level="h2" sx={{ fontWeight: 900, mb: 0.5 }}>Watch the latest</Typography>
+          <Typography level="body-sm" sx={{ color: 'text.secondary', mb: 2 }}>Official product videos from the brands you shop.</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <Box sx={{ overflow: 'hidden', borderRadius: 'xl', bgcolor: '#101312', aspectRatio: '16/9', boxShadow: '0 10px 30px rgba(0,0,0,.12)' }}>
+              <iframe width="100%" height="100%" src="https://www.youtube.com/embed/_-AS5DtDeqs" title="Apple iPhone product video" loading="lazy" style={{ border: 0 }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+            </Box>
+            <Box sx={{ overflow: 'hidden', borderRadius: 'xl', bgcolor: '#101312', aspectRatio: '16/9', boxShadow: '0 10px 30px rgba(0,0,0,.12)' }}>
+              <iframe width="100%" height="100%" src="https://www.youtube.com/embed/SA93zbnoR4U" title="Samsung Galaxy product video" loading="lazy" style={{ border: 0 }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+            </Box>
+          </Box>
+        </Box>
+
+        <SmartSuggestions />
 
         {/* =====================================================
             PRODUCT ROWS

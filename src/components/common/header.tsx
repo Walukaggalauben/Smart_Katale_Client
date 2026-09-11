@@ -29,6 +29,7 @@ import {
   Menu as MenuIcon,
   FavoriteBorder,
   LocalOfferOutlined,
+  CompareArrows,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../types/hooks.types';
@@ -49,6 +50,7 @@ const Header: React.FC = () => {
 
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
+  const compareItems = useAppSelector((state) => state.compare.items);
   const { is_authenticated, role, first_name, email } = useAppSelector((state) => state.user);
 
   // ---------------------------------------------------------
@@ -577,6 +579,19 @@ const Header: React.FC = () => {
               <IconButton
                 variant="plain"
                 color="neutral"
+                onClick={() => navigate('/compare')}
+                sx={{ position: 'relative', borderRadius: 'lg', display: { xs: 'none', sm: 'inline-flex' } }}
+                aria-label="Compare products"
+              >
+                <CompareArrows />
+                {compareItems.length > 0 && (
+                  <Chip size="sm" color="success" variant="solid" sx={{ position: 'absolute', top: -3, right: -5, minWidth: 19, height: 19, borderRadius: '999px', p: 0, fontSize: '0.63rem' }}>{compareItems.length}</Chip>
+                )}
+              </IconButton>
+
+              <IconButton
+                variant="plain"
+                color="neutral"
                 onClick={() => navigate('/cart')}
                 sx={{
                   position: 'relative',
@@ -606,7 +621,11 @@ const Header: React.FC = () => {
                 )}
               </IconButton>
 
-              {is_authenticated ? (
+              <Button variant="soft" color="success" startDecorator={<CompareArrows />} onClick={() => { navigate('/compare'); setMobileMenuOpen(false); }} sx={{ justifyContent: 'flex-start', borderRadius: 'lg', minHeight: 45 }}>
+              Compare {compareItems.length > 0 ? `(${compareItems.length})` : ''}
+            </Button>
+
+            {is_authenticated ? (
                 <Dropdown>
                   <MenuButton
                     variant="outlined"
