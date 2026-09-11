@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from '../types/hooks.types';
 import DynamicBreadcrumb from '../components/ui/bread_crumb';
 import { FaWhatsapp } from 'react-icons/fa';
 import SmartSuggestions from '../components/common/smart_suggestions';
+import ProductCard from '../components/ui/product_card';
 
 
 
@@ -220,6 +221,46 @@ const Home = () => {
             </Box>
           </Box>
         </Box>
+
+        {/* =====================================================
+            IPHONE 18 PRE-ORDER PRODUCTS
+        ===================================================== */}
+        {(() => {
+          const preorderProducts = (products || [])
+            .filter((p: any) => /iphone 18|iphone duo/i.test(String(p.name || '')))
+            .sort((a: any, b: any) => {
+              const rank = (name: string) => /iphone 18 pro max/i.test(name) ? 1 : /iphone 18 pro/i.test(name) ? 0 : 2;
+              return rank(String(a.name || '')) - rank(String(b.name || ''));
+            });
+
+          if (!preorderProducts.length) return null;
+
+          return (
+            <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 1.5, md: 4 }, mb: 6 }}>
+              <Box sx={{ mb: 2 }}>
+                <Typography level="h2" sx={{ fontWeight: 900 }}>iPhone 18 Pre-order</Typography>
+                <Typography level="body-md" sx={{ color: 'text.secondary', mt: .5 }}>Reserve the latest Pro models and iPhone Duo using the actual catalogue images.</Typography>
+              </Box>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2,minmax(0,1fr))', sm: 'repeat(2,minmax(0,1fr))', md: 'repeat(3,minmax(0,1fr))' }, gap: { xs: 1.25, sm: 2.5 } }}>
+                {preorderProducts.slice(0, 3).map((p: any) => (
+                  <ProductCard
+                    key={p.id}
+                    id={p.id}
+                    name={p.name}
+                    price={p.price}
+                    image={p.image_url || p.source_image_url || ''}
+                    discount={p.discount}
+                    description={p.description}
+                    rating={p.rating}
+                    reviews_count={p.reviews_count}
+                    views_count={p.views_count}
+                    status="Pre-order"
+                  />
+                ))}
+              </Box>
+            </Box>
+          );
+        })()}
 
         {/* =====================================================
             OFFICIAL PRODUCT VIDEOS
