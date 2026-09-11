@@ -17,11 +17,8 @@ const WHATSAPP_NUMBER = '256787808501';
 const Home = () => {
   const dispatch = useAppDispatch();
 
-  const { products, loading: productsLoading } = useAppSelector(
+  const { products, loading: productsLoading, error: productsError } = useAppSelector(
     (state) => state.products
-  );
-  const { loading: userLoading } = useAppSelector(
-    (state) => state.user
   );
 
   const [productRows, setProductRows] = useState<any[]>([]);
@@ -88,72 +85,6 @@ const Home = () => {
       'noopener,noreferrer'
     );
   };
-
-  // Only block the entire application while the initial
-  // master catalogue is being loaded.
-  //
-  // Once products exist, filtering/searching must never
-  // unmount the Outlet. Source filtering has its own
-  // loading state in Redux.
-  if ((!products && productsLoading) || userLoading) {
-    return (
-      <>
-        <Header />
-
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '50vh',
-            gap: 2,
-          }}
-        >
-          <CircularProgress
-            size="sm"
-            variant="solid"
-            color="success"
-          />
-
-          <Typography level="body-sm" component="h4">
-            Loading.....
-          </Typography>
-        </Box>
-
-        <Footer />
-      </>
-    );
-  }
-
-  if (!products || products.length === 0) {
-    return (
-      <>
-        <Header />
-
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '50vh',
-            gap: 2,
-          }}
-        >
-          <Typography level="h3">
-            No Products Available
-          </Typography>
-
-          <Typography level="body-lg">
-            Please check back later or try refreshing the page.
-          </Typography>
-        </Box>
-
-        <Footer />
-      </>
-    );
-  }
 
   return (
     <>
@@ -297,12 +228,39 @@ const Home = () => {
           <Typography level="h2" sx={{ fontWeight: 900, mb: 0.5 }}>Watch the latest</Typography>
           <Typography level="body-sm" sx={{ color: 'text.secondary', mb: 2 }}>Official product videos from the brands you shop.</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-            <Box sx={{ overflow: 'hidden', borderRadius: 'xl', bgcolor: '#101312', aspectRatio: '16/9', boxShadow: '0 10px 30px rgba(0,0,0,.12)' }}>
-              <iframe width="100%" height="100%" src="https://www.youtube.com/embed/_-AS5DtDeqs" title="Apple iPhone product video" loading="lazy" style={{ border: 0 }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
-            </Box>
-            <Box sx={{ overflow: 'hidden', borderRadius: 'xl', bgcolor: '#101312', aspectRatio: '16/9', boxShadow: '0 10px 30px rgba(0,0,0,.12)' }}>
-              <iframe width="100%" height="100%" src="https://www.youtube.com/embed/SA93zbnoR4U" title="Samsung Galaxy product video" loading="lazy" style={{ border: 0 }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
-            </Box>
+            {[
+              { id: '_-AS5DtDeqs', brand: 'Apple', title: 'Apple iPhone Pro — Official video' },
+              { id: 'SA93zbnoR4U', brand: 'Samsung', title: 'Samsung Galaxy — Official video' },
+            ].map((video) => (
+              <Box
+                key={video.id}
+                component="a"
+                href={`https://www.youtube.com/watch?v=${video.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  position: 'relative',
+                  display: 'block',
+                  overflow: 'hidden',
+                  borderRadius: 'xl',
+                  bgcolor: '#101312',
+                  aspectRatio: '16/9',
+                  boxShadow: '0 10px 30px rgba(0,0,0,.12)',
+                  textDecoration: 'none',
+                  '&:hover img': { transform: 'scale(1.025)' },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+                  alt={video.title}
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .2s ease' }}
+                />
+                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0,0,0,.18)' }}>
+                  <Box sx={{ px: 2, py: 1, borderRadius: '999px', bgcolor: 'rgba(0,0,0,.76)', color: '#fff', fontWeight: 900, fontSize: { xs: '0.78rem', sm: '0.9rem' } }}>▶ Watch {video.brand} on YouTube</Box>
+                </Box>
+              </Box>
+            ))}
           </Box>
         </Box>
 
@@ -311,6 +269,23 @@ const Home = () => {
         {/* =====================================================
             PRODUCT ROWS
         ===================================================== */}
+        {productsError && !products?.length && (
+          <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 1.5, md: 4 }, mb: 3 }}>
+            <Box sx={{ p: 2, borderRadius: 'lg', bgcolor: '#fff4e5', border: '1px solid #f0c36d', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+              <Box>
+                <Typography level="title-sm" sx={{ fontWeight: 900 }}>Catalogue temporarily unavailable</Typography>
+                <Typography level="body-sm" sx={{ color: 'text.secondary' }}>Please retry the catalogue connection.</Typography>
+              </Box>
+              <Button size="sm" color="success" variant="solid" onClick={() => dispatch(FetchAllProductsThunk(5000))}>Retry catalogue</Button>
+            </Box>
+          </Box>
+        )}
+        {productsLoading && !products?.length && !productsError && (
+          <Box sx={{ textAlign: 'center', py: 2 }}>
+            <CircularProgress size="sm" color="success" />
+            <Typography level="body-sm" sx={{ ml: 1 }}>Loading catalogue…</Typography>
+          </Box>
+        )}
         {productRows.length > 0 ? (
           productRows.map((row) => (
             <Box key={row.id} sx={{ mb: 6 }}>
@@ -323,16 +298,10 @@ const Home = () => {
             </Box>
           ))
         ) : (
-          <Box
-            sx={{
-              textAlign: 'center',
-              py: 4,
-            }}
-          >
-            <CircularProgress
-              size="sm"
-              sx={{ mt: 2 }}
-            />
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
+              Catalogue products will appear here once they are loaded.
+            </Typography>
           </Box>
         )}
       </Box>

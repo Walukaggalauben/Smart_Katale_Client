@@ -22,6 +22,7 @@ export interface ProductsState {
   products: Product[] | null;
   filteredProducts: Product[] | null;
   loading: boolean;
+  error?: string | null;
   sourceFiltering: boolean;
   searchTerm: string;
   filters: {

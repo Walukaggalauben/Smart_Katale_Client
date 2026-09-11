@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   Typography,
+  Checkbox,
   AspectRatio,
   Box,
   Chip,
@@ -15,7 +16,6 @@ import {
   AddShoppingCart,
   DeleteOutline,
   ArrowForward,
-  CompareArrows,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../utils/toast-context';
@@ -114,7 +114,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     navigate(`/product-details/${id}`);
   };
 
-  const handleCompare = (e: React.MouseEvent) => {
+  const handleCompare = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     if (inCompare) {
       dispatch(removeFromCompare(id));
@@ -255,16 +255,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
           bgcolor: '#f6f8f7',
         }}
       >
-        <IconButton
-          size="sm"
-          variant={inCompare ? 'solid' : 'soft'}
-          color="success"
-          onClick={handleCompare}
-          aria-label="Compare product"
-          sx={{ position: 'absolute', top: 10, right: 10, zIndex: 4, borderRadius: '50%' }}
+        <Box
+          onClick={(e) => e.stopPropagation()}
+          sx={{ position: 'absolute', top: 8, right: 8, zIndex: 5, bgcolor: 'rgba(255,255,255,.96)', borderRadius: 'md', boxShadow: 'sm', px: 0.6 }}
         >
-          <CompareArrows sx={{ fontSize: 18 }} />
-        </IconButton>
+          <Checkbox
+            size="sm"
+            color="success"
+            variant={inCompare ? 'solid' : 'soft'}
+            checked={inCompare}
+            onChange={handleCompare}
+            label="Compare"
+            sx={{ fontWeight: 800, fontSize: '0.72rem' }}
+            slotProps={{ label: { sx: { fontWeight: 800, whiteSpace: 'nowrap' } } }}
+          />
+        </Box>
 
         <AspectRatio
           ratio="1"

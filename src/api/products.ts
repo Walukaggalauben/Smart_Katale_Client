@@ -72,7 +72,7 @@ export const FetchAllProducts = async (limit: number) => {
         return { Categories: [], Brands: [], Products: [], Category_Brands_Map: [] };
     } catch (error) {
         console.error('Error fetching products:', error);
-        return { Categories: [], Brands: [], Products: [], Category_Brands_Map: [] };
+        throw error;
     }
 };
 
@@ -172,7 +172,7 @@ export const FetchProductsBySourceFilter = async (
 
 export const SearchProduct = async (search_term: string, limit = 50) => {
     try {
-        const response = await axios.get(`${API_URL}/products/?name=${search_term}&limit=${limit}`);
+        const response = await axios.get(`${API_URL}/products/?name=${encodeURIComponent(search_term)}&limit=${limit}`);
 
         
         if (response?.status === 200) {

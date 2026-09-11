@@ -21,6 +21,8 @@ import {
   ShoppingBagOutlined,
   LocalShippingOutlined,
   VerifiedOutlined,
+  CompareArrows,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 
 import SearchInput from '../components/common/searchInput';
@@ -33,7 +35,9 @@ import {
   clearFilters,
   applyFiltersAndSort,
   localSearch,
+  FetchAllProductsThunk,
 } from '../Slices/productSlice';
+import { removeFromCompare, clearCompare } from '../Slices/compareSlice';
 
 const Shop: React.FC = () => {
   const location = useLocation();
@@ -48,7 +52,10 @@ const Shop: React.FC = () => {
     sortBy,
     products,
     filteredProducts,
+    error: productsError,
   } = useAppSelector((state) => state.products);
+
+  const compareItems = useAppSelector((state) => state.compare.items);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -157,24 +164,7 @@ const Shop: React.FC = () => {
     Boolean(filters.maxPrice) ||
     Boolean(filters.status);
 
-  if (loading && !filteredProducts) {
-    return (
-      <Box
-        sx={{
-          minHeight: '60vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <CircularProgress
-          size="lg"
-          variant="soft"
-          color="success"
-        />
-      </Box>
-    );
-  }
+  const initialCatalogueLoading = loading && !products;
 
   return (
     <Box
@@ -342,6 +332,19 @@ const Shop: React.FC = () => {
           px: { xs: 1.5, sm: 2, md: 4 },
         }}
       >
+        {initialCatalogueLoading && (
+          <Sheet variant="soft" color="success" sx={{ mb: 2, p: 1.5, borderRadius: 'lg', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CircularProgress size="sm" color="success" />
+            <Typography level="body-sm" sx={{ fontWeight: 700 }}>Loading the catalogue…</Typography>
+          </Sheet>
+        )}
+        {productsError && (
+          <Sheet variant="soft" color="danger" sx={{ mb: 2, p: 1.5, borderRadius: 'lg', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, flexWrap: 'wrap' }}>
+            <Typography level="body-sm" sx={{ fontWeight: 700 }}>We could not load the catalogue. Your search will work again once the connection is restored.</Typography>
+            <Button size="sm" color="success" onClick={() => dispatch(FetchAllProductsThunk(5000))}>Retry</Button>
+          </Sheet>
+        )}
+
         {/* =========================================================
             SEARCH / FILTER AREA
         ========================================================= */}
@@ -705,6 +708,43 @@ const Shop: React.FC = () => {
           </Sheet>
         )}
       </Box>
+
+      {compareItems.length > 0 && (
+        <Sheet
+          variant="solid"
+          color="success"
+          sx={{
+            position: 'fixed',
+            left: { xs: 8, sm: 20 },
+            right: { xs: 8, sm: 20 },
+            bottom: { xs: 8, sm: 18 },
+            zIndex: 1200,
+            maxWidth: 900,
+            mx: 'auto',
+            p: { xs: 1, sm: 1.25 },
+            borderRadius: 'xl',
+            boxShadow: '0 16px 45px rgba(0,0,0,.22)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, flex: 1, minWidth: 180 }}>
+            <CompareArrows />
+            <Typography sx={{ color: '#fff', fontWeight: 900 }}>{compareItems.length}/3 selected</Typography>
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.6, flexWrap: 'wrap' }}>
+              {compareItems.map((item) => (
+                <Chip key={item.id} size="sm" variant="soft" sx={{ bgcolor: 'rgba(255,255,255,.12)', color: '#fff' }} endDecorator={<CloseIcon sx={{ fontSize: 14 }} onClick={() => dispatch(removeFromCompare(item.id))} />}>
+                  {item.name || 'Product'}
+                </Chip>
+              ))}
+            </Box>
+          </Box>
+          <Button size="sm" variant="solid" sx={{ bgcolor: '#fff', color: '#006b3c', fontWeight: 900, '&:hover': { bgcolor: '#f1f5f2' } }} onClick={() => navigate('/compare')}>Compare now</Button>
+          <Button size="sm" variant="plain" sx={{ color: '#fff' }} onClick={() => dispatch(clearCompare())}>Clear</Button>
+        </Sheet>
+      )}
     </Box>
   );
 };

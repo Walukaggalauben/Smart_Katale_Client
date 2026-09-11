@@ -18,6 +18,7 @@ const Initial: ProductsState = {
   products: null,
   filteredProducts: null,
   loading: false,
+  error: null,
   sourceFiltering: false,
   searchTerm: '',
   filters: {
@@ -345,11 +346,13 @@ const Products = createSlice({
       // Handle FetchAllProductsThunk states
       .addCase(FetchAllProductsThunk.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
 .addCase(
     FetchAllProductsThunk.fulfilled,
     (state, action: PayloadAction<FetchProductsResponse>) => {
         state.loading = false;
+        state.error = null;
 
         if (action.payload?.Categories) {
             state.categories = action.payload.Categories;
@@ -397,6 +400,7 @@ const Products = createSlice({
 )
       .addCase(FetchAllProductsThunk.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.error.message || 'Unable to load the product catalogue.';
         console.error('Failed to fetch products:', action.error);
       })
       
