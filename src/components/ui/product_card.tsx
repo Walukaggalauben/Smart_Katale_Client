@@ -89,7 +89,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
       image.startsWith('http://') ||
       image.startsWith('https://')
     ) {
-      return image;
+      // Source catalogues can return filenames containing spaces.
+      // Encode only the URL characters that need escaping while
+      // preserving the remote image URL itself.
+      return encodeURI(image);
     }
 
     const baseUrl =
@@ -285,7 +288,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 : getImageUrl()
             }
             alt={name || 'Product'}
-            loading="lazy"
+            loading={status.toLowerCase() === 'pre-order' ? 'eager' : 'lazy'}
             onError={handleImageError}
             style={{
               width: '100%',
