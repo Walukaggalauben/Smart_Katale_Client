@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+<rect width="800" height="800" fill="#f3f6f4"/>
+<rect x="120" y="150" width="560" height="500" rx="28" fill="#ffffff" stroke="#d7e3dc" stroke-width="8"/>
+<path d="M220 560l125-145 95 105 75-85 105 125H220z" fill="#0b6b43" opacity=".18"/>
+<circle cx="500" cy="300" r="48" fill="#0b6b43" opacity=".2"/>
+<text x="400" y="710" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#35604b">MINIFY GADGETS</text>
+</svg>

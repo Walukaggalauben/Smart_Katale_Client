@@ -29,6 +29,35 @@ import type { ProductCardProps } from '../../interfaces/products.interfaces';
 import type { CartItem } from '../../interfaces/cart.interfaces';
 import { addToCompare, removeFromCompare } from '../../Slices/compareSlice';
 
+// Never leave a broken-image icon on the storefront when a supplier image is unavailable.
+const FALLBACK_IMAGE =
+  'data:image/svg+xml;charset=UTF-8,' +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+      <rect width="800" height="800" fill="#f3f6f4"/>
+      <rect x="120" y="120" width="560" height="560" rx="28" fill="#ffffff" stroke="#d8e4dd" stroke-width="6"/>
+      <text x="400" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="#006b3c">MINIFY GADGETS</text>
+      <text x="400" y="445" text-anchor="middle" font-family="Arial,sans-serif" font-size="24" fill="#66736c">Product image unavailable</text>
+    </svg>
+  `);
+
+// Catalogue descriptions can arrive as HTML from supplier feeds.
+// Cards should show clean readable text instead of exposing markup.
+const cleanDescription = (value?: string) => {
+  if (!value) return '';
+  const decoded = value
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/p>\s*<p>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+  return decoded.replace(/\s+/g, ' ').trim();
+};
+
 const ProductCard: React.FC<ProductCardProps> = ({
   id,
   name,
@@ -73,6 +102,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const numericPrice = Number(price) || 0;
   const numericDiscount = Number(discount) || 0;
+  const readableDescription = cleanDescription(description);
   const priceOnRequest = numericPrice <= 0;
 
   const originalPrice =
@@ -82,7 +112,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const getImageUrl = () => {
     if (!image || image === 'products/default.jpg') {
-      return '/placeholder-image.jpg';
+      return FALLBACK_IMAGE;
     }
 
     if (
@@ -110,7 +140,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     e: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
     setImageError(true);
-    e.currentTarget.src = '/placeholder-image.jpg';
+    e.currentTarget.src = '/placeholder-image.svg';
   };
 
   const handleCardClick = () => {
@@ -284,7 +314,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <img
             src={
               imageError
-                ? '/placeholder-image.jpg'
+                ? '/placeholder-image.svg'
                 : getImageUrl()
             }
             alt={name || 'Product'}
@@ -372,7 +402,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {name || 'Unnamed Product'}
         </Typography>
 
-        {description && (
+        {readableDescription && (
           <Typography
             level="body-xs"
             textColor="neutral.600"
@@ -385,7 +415,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               WebkitBoxOrient: 'vertical',
             }}
           >
-            {description}
+            {readableDescription}
           </Typography>
         )}
 

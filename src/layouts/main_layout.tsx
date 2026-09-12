@@ -248,7 +248,7 @@ const Home = () => {
                     id={p.id}
                     name={p.name}
                     price={p.price}
-                    image={p.image_url || p.source_image_url || ''}
+                    image={p.source_image_url || p.image_url || ''}
                     discount={p.discount}
                     description={p.description}
                     rating={p.rating}
@@ -270,7 +270,7 @@ const Home = () => {
           <Typography level="body-sm" sx={{ color: 'text.secondary', mb: 2 }}>Official product videos from the brands you shop.</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
             {[
-              { id: '_-AS5DtDeqs', brand: 'Apple', title: 'Apple iPhone Pro — Official video' },
+              { id: 'M0au92yebLQ', brand: 'Apple', title: 'Apple iPhone Air — Official video' },
               { id: 'SA93zbnoR4U', brand: 'Samsung', title: 'Samsung Galaxy — Official video' },
             ].map((video) => (
               <Box
@@ -293,7 +293,7 @@ const Home = () => {
               >
                 <Box
                   component="img"
-                  src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+                  src={video.brand === 'Apple' ? '/iphone-17-pro-max-official.png' : `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
                   alt={video.title}
                   sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .2s ease' }}
                 />

@@ -377,7 +377,7 @@ const Products = createSlice({
                 image_url: product.image_url || '',
                 rating: Number(product.rating) || 0,
                 reviews_count: Number(product.reviews_count) || 0,
-                stock: Number(product.stock) || 100,
+                stock: Number(product.stock) || 0,
                 created_at: product.created_at || new Date().toISOString(),
                 updated_at: product.updated_at || new Date().toISOString(),
                 categories: product.categories || [],

@@ -103,7 +103,7 @@ const ProductDetails: React.FC = () => {
 
   const getImageUrl = (imagePath?: string) => {
     if (!imagePath || imagePath === 'products/default.jpg') {
-      return '/placeholder-image.jpg';
+      return '/placeholder-image.svg';
     }
 
     if (
@@ -130,7 +130,7 @@ const ProductDetails: React.FC = () => {
     }
 
     return [
-      product.image_url || product.source_image_url,
+      product.source_image_url || product.image_url || (/iphone 17 pro max/i.test(product.name || '') ? '/iphone-17-pro-max-official.png' : /iphone air/i.test(product.name || '') ? '/iphone-air-official.png' : '/placeholder-image.svg'),
       ...(product.additional_images || []),
     ].filter(Boolean) as string[];
   }, [product]);

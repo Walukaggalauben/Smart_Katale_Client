@@ -144,7 +144,31 @@ const Shop: React.FC = () => {
     dispatch(clearFilters());
   };
 
-  const results = filteredProducts || [];
+  // Keep the customer-facing catalogue clean when multiple source records
+  // represent the same product. We do not delete the underlying records.
+  const results = useMemo(() => {
+    const sourceResults = filteredProducts || [];
+    const seen = new Set<string>();
+    const unique: typeof sourceResults = [];
+
+    for (const item of sourceResults) {
+      const normalizedName = String(item.name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const normalizedStatus = String(item.status || item.condition || '')
+        .toLowerCase()
+        .trim();
+      const key = `${normalizedName}|${normalizedStatus}`;
+
+      if (!normalizedName || seen.has(key)) continue;
+      seen.add(key);
+      unique.push(item);
+    }
+
+    return unique;
+  }, [filteredProducts]);
 
   const displayedResults = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -515,7 +539,29 @@ const Shop: React.FC = () => {
         {/* =========================================================
             PRODUCT GRID
         ========================================================= */}
-        {displayedResults.length > 0 ? (
+        {initialCatalogueLoading ? (
+          <Sheet
+            variant="outlined"
+            sx={{
+              minHeight: 360,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+              borderRadius: 'xl',
+              bgcolor: '#fff',
+            }}
+          >
+            <CircularProgress color="success" size="lg" />
+            <Typography level="title-md" sx={{ fontWeight: 800 }}>
+              Loading products…
+            </Typography>
+            <Typography level="body-sm" textColor="text.secondary">
+              Preparing the catalogue for you.
+            </Typography>
+          </Sheet>
+        ) : displayedResults.length > 0 ? (
           <>
             <Grid
               container
@@ -540,7 +586,7 @@ const Shop: React.FC = () => {
                     id={item.id}
                     name={item.name}
                     price={item.price}
-                    image={item.image_url || item.source_image_url}
+                    image={item.source_image_url || item.image_url}
                     discount={item.discount}
                     rating={item.rating}
                     reviews_count={item.reviews_count}
