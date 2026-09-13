@@ -54,6 +54,18 @@ const Home = () => {
       return copy;
     };
 
+    const uniqueProducts = (items: any[]) => {
+      const seen = new Set<string>();
+      return [...items]
+        .sort((a: any, b: any) => Number(Boolean(b?.source_image_url || b?.image_url)) - Number(Boolean(a?.source_image_url || a?.image_url)))
+        .filter((item: any) => {
+          const key = String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    };
+
     const sections = [
       { title: '🔥 Latest & Trending', items: byName(['galaxy s26', 'z fold 8', 'pixel 11', 'iphone 17']) },
       { title: '📱 Samsung Galaxy', items: byName(['samsung galaxy']) },
@@ -69,7 +81,7 @@ const Home = () => {
       .map((section, i) => ({
         id: `row-${i}-${section.title}`,
         title: section.title,
-        products: shuffle(section.items).slice(0, 15),
+        products: shuffle(uniqueProducts(section.items)).slice(0, 15),
       }));
 
     setProductRows(rows);
@@ -270,13 +282,13 @@ const Home = () => {
           <Typography level="body-sm" sx={{ color: 'text.secondary', mb: 2 }}>Official product videos from the brands you shop.</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
             {[
-              { id: 'M0au92yebLQ', brand: 'Apple', title: 'Apple iPhone Air — Official video' },
-              { id: 'SA93zbnoR4U', brand: 'Samsung', title: 'Samsung Galaxy — Official video' },
+              { id: 'apple-iphone-air', brand: 'Apple', title: 'Introducing iPhone Air — Official Apple Video', href: 'https://www.youtube.com/watch?v=M0au92yebLQ', image: 'https://www.minifygadgets.com/catalogue/iphone-17-air-256gb.jpg' },
+              { id: 'samsung-unpacked-2026', brand: 'Samsung', title: 'Galaxy Unpacked July 2026 — Official Highlights', href: 'https://www.youtube.com/watch?v=9PTRQjP6yAQ', image: 'https://i.ytimg.com/vi/9PTRQjP6yAQ/hqdefault.jpg' },
             ].map((video) => (
               <Box
                 key={video.id}
                 component="a"
-                href={`https://www.youtube.com/watch?v=${video.id}`}
+                href={video.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
@@ -293,12 +305,12 @@ const Home = () => {
               >
                 <Box
                   component="img"
-                  src={video.brand === 'Apple' ? '/iphone-17-pro-max-official.png' : `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+                  src={video.image}
                   alt={video.title}
                   sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .2s ease' }}
                 />
                 <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0,0,0,.18)' }}>
-                  <Box sx={{ px: 2, py: 1, borderRadius: '999px', bgcolor: 'rgba(0,0,0,.76)', color: '#fff', fontWeight: 900, fontSize: { xs: '0.78rem', sm: '0.9rem' } }}>▶ Watch {video.brand} on YouTube</Box>
+                  <Box sx={{ px: 2, py: 1, borderRadius: '999px', bgcolor: 'rgba(0,0,0,.76)', color: '#fff', fontWeight: 900, fontSize: { xs: '0.78rem', sm: '0.9rem' } }}>▶ Watch {video.brand} official video</Box>
                 </Box>
               </Box>
             ))}

@@ -83,7 +83,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const [inCart, setInCart] = useState(!!cartItem);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 1);
-  const [imageError, setImageError] = useState(false);
+  const [resolvedImage, setResolvedImage] = useState(FALLBACK_IMAGE);
   const inCompare = compareItems.some((item) => String(item.id) === String(id));
 
   useEffect(() => {
@@ -136,11 +136,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
     return `${baseUrl}/media/${cleanPath}`;
   };
 
-  const handleImageError = (
-    e: React.SyntheticEvent<HTMLImageElement, Event>
-  ) => {
-    setImageError(true);
-    e.currentTarget.src = '/placeholder-image.svg';
+  useEffect(() => {
+    const candidate = getImageUrl();
+    setResolvedImage(candidate);
+  }, [image]);
+
+  const handleImageError = () => {
+    setResolvedImage(FALLBACK_IMAGE);
   };
 
   const handleCardClick = () => {
@@ -312,11 +314,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           }}
         >
           <img
-            src={
-              imageError
-                ? '/placeholder-image.svg'
-                : getImageUrl()
-            }
+            src={resolvedImage}
             alt={name || 'Product'}
             loading={status.toLowerCase() === 'pre-order' ? 'eager' : 'lazy'}
             onError={handleImageError}
@@ -327,6 +325,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               display: 'block',
               padding: '10px',
               opacity: 1,
+              transition: 'none',
             }}
           />
         </AspectRatio>

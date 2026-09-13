@@ -147,7 +147,15 @@ const Shop: React.FC = () => {
   // Keep the customer-facing catalogue clean when multiple source records
   // represent the same product. We do not delete the underlying records.
   const results = useMemo(() => {
-    const sourceResults = filteredProducts || [];
+    const sourceResults = [...(filteredProducts || [])];
+    // When duplicate catalogue records exist, always prefer the record
+    // that already has a usable image so customers never see a blank card
+    // simply because an older duplicate was created first.
+    sourceResults.sort((a: any, b: any) => {
+      const aHasImage = Boolean(a?.source_image_url || a?.image_url);
+      const bHasImage = Boolean(b?.source_image_url || b?.image_url);
+      return Number(bHasImage) - Number(aHasImage);
+    });
     const seen = new Set<string>();
     const unique: typeof sourceResults = [];
 

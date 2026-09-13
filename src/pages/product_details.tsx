@@ -36,6 +36,17 @@ import type { CartItem } from '../interfaces/cart.interfaces';
 import ProductCard from '../components/ui/product_card';
 import { RecordProductView } from '../api/products';
 
+const FALLBACK_IMAGE =
+  'data:image/svg+xml;charset=UTF-8,' +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+      <rect width="800" height="800" fill="#f3f6f4"/>
+      <rect x="120" y="120" width="560" height="560" rx="28" fill="#ffffff" stroke="#d8e4dd" stroke-width="6"/>
+      <text x="400" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="#006b3c">MINIFY GADGETS</text>
+      <text x="400" y="445" text-anchor="middle" font-family="Arial,sans-serif" font-size="24" fill="#66736c">Product image unavailable</text>
+    </svg>
+  `);
+
 const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -103,14 +114,14 @@ const ProductDetails: React.FC = () => {
 
   const getImageUrl = (imagePath?: string) => {
     if (!imagePath || imagePath === 'products/default.jpg') {
-      return '/placeholder-image.svg';
+      return FALLBACK_IMAGE;
     }
 
     if (
       imagePath.startsWith('http://') ||
       imagePath.startsWith('https://')
     ) {
-      return imagePath;
+      return encodeURI(imagePath);
     }
 
     const baseUrl =
@@ -431,7 +442,7 @@ const ProductDetails: React.FC = () => {
                   src={
                     images[selectedImage]
                       ? getImageUrl(images[selectedImage])
-                      : '/placeholder-image.jpg'
+                      : FALLBACK_IMAGE
                   }
                   alt={product.name}
                   style={{
@@ -441,8 +452,7 @@ const ProductDetails: React.FC = () => {
                     display: 'block',
                   }}
                   onError={(event) => {
-                    event.currentTarget.src =
-                      '/placeholder-image.jpg';
+                    event.currentTarget.src = FALLBACK_IMAGE;
                   }}
                 />
               </Box>
