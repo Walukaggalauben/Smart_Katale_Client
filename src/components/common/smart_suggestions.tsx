@@ -15,7 +15,33 @@ const SmartSuggestions: React.FC = () => {
     try { history = JSON.parse(localStorage.getItem('minify_recent_products') || '[]'); } catch { history = []; }
     const recent = history.map((id) => products.find((p) => String(p.id) === String(id))).filter(Boolean) as Product[];
     const seed = recent[0];
-    const scored = products.filter((p) => !recent.some((r) => String(r.id) === String(p.id))).map((p) => {
+    // Suggestions must never surface the same catalogue product twice.
+    // Source records can have different IDs while representing the same
+    // customer-facing product, so dedupe by normalized name and prefer the
+    // record that already has a usable image.
+    const uniqueProducts = products.reduce((acc: Product[], p) => {
+      const key = String(p.name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!key) return acc;
+      const existingIndex = acc.findIndex((x) => String(x.name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim() === key);
+      if (existingIndex === -1) {
+        acc.push(p);
+      } else {
+        const existing = acc[existingIndex];
+        const existingHasImage = Boolean(existing.image_url || existing.source_image_url);
+        const candidateHasImage = Boolean(p.image_url || p.source_image_url);
+        if (!existingHasImage && candidateHasImage) acc[existingIndex] = p;
+      }
+      return acc;
+    }, []);
+    const scored = uniqueProducts.filter((p) => !recent.some((r) => String(r.id) === String(p.id))).map((p) => {
       let score = Number(p.rating || 0) * 3 + Math.min(Number(p.views_count || 0), 100) / 100;
       if (seed && p.brand && seed.brand && String(p.brand).toLowerCase() === String(seed.brand).toLowerCase()) score += 4;
       if (seed && p.category && seed.category && String(p.category).toLowerCase() === String(seed.category).toLowerCase()) score += 5;
