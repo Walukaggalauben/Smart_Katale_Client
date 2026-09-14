@@ -6,7 +6,7 @@ import SmartForm from "./form"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Box from "@mui/joy/Box"
-import {FaEnvelope,FaEnvelopeOpen,FaMapMarkerAlt, FaPhoneAlt, FaTiktok, FaWhatsapp } from "react-icons/fa"
+import {FaEnvelope,FaEnvelopeOpen,FaInstagram,FaMapMarkerAlt, FaPhoneAlt, FaTiktok, FaWhatsapp } from "react-icons/fa"
 import Contact from '/images/contact.png'
 import SmartAgents from '/images/smart_agents.png'
 import {Card, CardContent, List, ListItem, ListItemContent, ListItemDecorator } from "@mui/joy"
@@ -238,8 +238,11 @@ opacity:.9
   <a href="https://wa.me/256787808501?text=Hello%20Minify%20Gadgets!" target="_blank" rel="noopener noreferrer">
     <FaWhatsapp size={20} color="white" className="cursor-pointer" />
   </a>
-  <a href="https://www.tiktok.com/@reuben2560">
+  <a href="https://www.tiktok.com/@reuben2560" target="_blank" rel="noopener noreferrer" aria-label="MINIFY GADGETS on TikTok">
     <FaTiktok size={15} color="white" className="cursor-pointer" />
+  </a>
+  <a href="https://www.instagram.com/laubengram/" target="_blank" rel="noopener noreferrer" aria-label="MINIFY GADGETS on Instagram">
+    <FaInstagram size={17} color="white" className="cursor-pointer" />
   </a>
   <a href="tel:256787808501">
     <FaPhoneAlt size={15} color="white" className="cursor-pointer"/>

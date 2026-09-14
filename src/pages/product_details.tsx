@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -61,6 +61,8 @@ const ProductDetails: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const touchStartX = useRef<number | null>(null);
+  const touchDeltaX = useRef(0);
 
   useEffect(() => {
     if (!products || !id) {
@@ -170,6 +172,81 @@ const ProductDetails: React.FC = () => {
     }
   }, [product?.id]);
 
+  const productFamilyKey = (name: string) => {
+    return String(name || '')
+      .toLowerCase()
+      .replace(/\b(?:128|256|512|1024|1)\s*(?:gb|g|tb)\b/g, ' ')
+      .replace(/\b(?:black|white|cream|violet|lavender|green|blue|silver|gold|pink|red|purple|graphite|beige|desert|natural|titanium)\b/g, ' ')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const extractStorage = (name: string) => {
+    const match = String(name || '').match(/\b(1TB|1024GB|512GB|256GB|128GB|64GB)\b/i);
+    if (!match) return '';
+    return match[1].toUpperCase().replace('1024GB', '1TB');
+  };
+
+  const variantProducts = useMemo(() => {
+    if (!product || !products?.length) return [];
+    const key = productFamilyKey(product.name || '');
+    if (!key) return [];
+    return products
+      .filter((item) => item.id.toString() !== product.id.toString() && productFamilyKey(item.name || '') === key)
+      .filter((item, index, arr) => arr.findIndex((candidate) => candidate.id.toString() === item.id.toString()) === index)
+      .sort((a, b) => {
+        const sa = extractStorage(a.name || '');
+        const sb = extractStorage(b.name || '');
+        return sa.localeCompare(sb, undefined, { numeric: true });
+      });
+  }, [product, products]);
+
+  const storageOptions = useMemo(() => {
+    if (!product) return [];
+    const all = [product, ...variantProducts];
+    const seen = new Set<string>();
+    return all.reduce<Product[]>((result, item) => {
+      const storage = extractStorage(item.name || '');
+      if (!storage || seen.has(storage)) return result;
+      seen.add(storage);
+      result.push(item);
+      return result;
+    }, []);
+  }, [product, variantProducts]);
+
+  const galleryImages = useMemo(() => {
+    const own = images;
+    const familyImages = variantProducts
+      .flatMap((item: any) => [item.source_image_url, item.image_url])
+      .filter(Boolean) as string[];
+    return [...new Set([...own, ...familyImages])];
+  }, [images, variantProducts]);
+
+  const handleGalleryTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+    touchDeltaX.current = 0;
+  };
+
+  const handleGalleryTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX.current === null) return;
+    touchDeltaX.current = (event.touches[0]?.clientX ?? touchStartX.current) - touchStartX.current;
+  };
+
+  const handleGalleryTouchEnd = () => {
+    if (touchStartX.current === null || galleryImages.length <= 1) return;
+    const threshold = 45;
+    if (Math.abs(touchDeltaX.current) >= threshold) {
+      if (touchDeltaX.current < 0) {
+        setSelectedImage((current) => current === galleryImages.length - 1 ? 0 : current + 1);
+      } else {
+        setSelectedImage((current) => current === 0 ? galleryImages.length - 1 : current - 1);
+      }
+    }
+    touchStartX.current = null;
+    touchDeltaX.current = 0;
+  };
+
   const price = Number(product?.price || 0);
   const discount = Number(product?.discount || 0);
 
@@ -253,22 +330,22 @@ const ProductDetails: React.FC = () => {
   };
 
   const handlePreviousImage = () => {
-    if (images.length <= 1) {
+    if (galleryImages.length <= 1) {
       return;
     }
 
     setSelectedImage((current) =>
-      current === 0 ? images.length - 1 : current - 1
+      current === 0 ? galleryImages.length - 1 : current - 1
     );
   };
 
   const handleNextImage = () => {
-    if (images.length <= 1) {
+    if (galleryImages.length <= 1) {
       return;
     }
 
     setSelectedImage((current) =>
-      current === images.length - 1 ? 0 : current + 1
+      current === galleryImages.length - 1 ? 0 : current + 1
     );
   };
 
@@ -426,6 +503,9 @@ const ProductDetails: React.FC = () => {
               }}
             >
               <Box
+                onTouchStart={handleGalleryTouchStart}
+                onTouchMove={handleGalleryTouchMove}
+                onTouchEnd={handleGalleryTouchEnd}
                 sx={{
                   height: {
                     xs: 320,
@@ -436,12 +516,14 @@ const ProductDetails: React.FC = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   p: { xs: 2, md: 4 },
+                  touchAction: 'pan-y',
+                  userSelect: 'none',
                 }}
               >
                 <img
                   src={
-                    images[selectedImage]
-                      ? getImageUrl(images[selectedImage])
+                    galleryImages[selectedImage]
+                      ? getImageUrl(galleryImages[selectedImage])
                       : FALLBACK_IMAGE
                   }
                   alt={product.name}
@@ -489,7 +571,7 @@ const ProductDetails: React.FC = () => {
                 <FavoriteBorder />
               </IconButton>
 
-              {images.length > 1 && (
+              {galleryImages.length > 1 && (
                 <>
                   <IconButton
                     variant="solid"
@@ -528,7 +610,7 @@ const ProductDetails: React.FC = () => {
               )}
             </Box>
 
-            {images.length > 1 && (
+            {galleryImages.length > 1 && (
               <Box
                 sx={{
                   display: 'flex',
@@ -541,7 +623,7 @@ const ProductDetails: React.FC = () => {
                   },
                 }}
               >
-                {images.map((image, index) => (
+                {galleryImages.map((image, index) => (
                   <Box
                     key={`${image}-${index}`}
                     onClick={() => setSelectedImage(index)}
@@ -581,6 +663,34 @@ const ProductDetails: React.FC = () => {
                     />
                   </Box>
                 ))}
+              </Box>
+            )}
+
+            {storageOptions.length > 1 && (
+              <Box sx={{ px: 1.5, pb: 1.5 }}>
+                <Typography level="body-sm" sx={{ fontWeight: 800, mb: 0.75 }}>
+                  Storage
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                  {storageOptions.map((option) => {
+                    const storage = extractStorage(option.name || '');
+                    const active = option.id.toString() === product.id.toString();
+                    return (
+                      <Button
+                        key={option.id.toString()}
+                        size="sm"
+                        variant={active ? 'solid' : 'outlined'}
+                        color="success"
+                        onClick={() => {
+                          if (!active) navigate(`/product-details/${option.id}`);
+                        }}
+                        sx={{ borderRadius: 'md', fontWeight: 800 }}
+                      >
+                        {storage}
+                      </Button>
+                    );
+                  })}
+                </Box>
               </Box>
             )}
           </Card>
