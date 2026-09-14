@@ -13,6 +13,7 @@ import Unauthorized from "./pages/404";
 import { useAppSelector } from "./types/hooks.types";
 import ProtectedRoute from "./layouts/protected";
 import { Box, Typography } from "@mui/joy";
+import SeoManager from "./components/common/seo_manager";
 
 function App() {
   const {loading } = useAppSelector((state) => state.user);
@@ -33,7 +34,9 @@ function App() {
   }
 
   return (
-    <Routes>
+    <>
+      <SeoManager />
+      <Routes>
       {/* Public routes - accessible to everyone */}
       <Route path="/order-success" element={<OrderSuccess />} />
       <Route path="/iphone-18-series" element={<Iphone18Series />} />
@@ -93,7 +96,8 @@ function App() {
           </Typography>
         </Box>
       } />
-    </Routes>
+      </Routes>
+    </>
   );
 }
 

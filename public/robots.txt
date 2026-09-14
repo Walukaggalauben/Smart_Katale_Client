@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /accounts/
+Disallow: /my-profile
+
+Sitemap: https://www.minifygadgets.com/sitemap.xml
