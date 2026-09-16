@@ -54,6 +54,7 @@ export interface ToastProp {
   id: string;
   message: string;
   color?: ColorPaletteProp;
+  action?: { label: string; onClick: () => void };
 }
 
 

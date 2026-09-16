@@ -274,6 +274,7 @@ const ProductDetails: React.FC = () => {
     addToast({
       color: 'success',
       message: 'Product added to cart',
+      action: { label: 'View Cart', onClick: () => navigate('/cart') },
     });
   };
 

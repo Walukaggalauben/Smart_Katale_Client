@@ -8,6 +8,7 @@ export interface OrderData {
   order_type: string;
   city: string;
   town: string;
+  shipping_address?: string;
   total_price: number | string;
   total_items: number | string;
   items?: Array<{

@@ -204,6 +204,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     addToast({
       message: 'Added to cart',
       color: 'success',
+      action: { label: 'View Cart', onClick: () => navigate('/cart') },
     });
   };
 

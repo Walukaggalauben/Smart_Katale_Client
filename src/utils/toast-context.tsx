@@ -7,11 +7,12 @@ interface Toast {
    id?:any;
       color: ColorPaletteProp;
       message:string;
+      action?: { label: string; onClick: () => void };
 }
 
 interface ToastContextType {
   toasts: Toast[];
-  addToast: ({ message, color }: { message: string; color: ColorPaletteProp }) => void;
+  addToast: ({ message, color, action }: { message: string; color: ColorPaletteProp; action?: { label: string; onClick: () => void } }) => void;
   removeToast: (id:string) => void;
 }
 
@@ -24,9 +25,9 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback(({ message, color }: { message: string; color: ColorPaletteProp }) => {
+  const addToast = useCallback(({ message, color, action }: { message: string; color: ColorPaletteProp; action?: { label: string; onClick: () => void } }) => {
     const id = Date.now() + Math.random(); 
-    setToasts(prev => [...prev, { id, message, color }]);
+    setToasts(prev => [...prev, { id, message, color, action }]);
 
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));

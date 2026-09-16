@@ -12,6 +12,7 @@ export const checkout = async (orderData: OrderData): Promise<OrderResponse> => 
       order_type: orderData.order_type || 'door_delivery',
       city: orderData.city || '',
       town: orderData.town || '',
+      shipping_address: (orderData as OrderData & { shipping_address?: string }).shipping_address || '',
       total_price: Number(orderData.total_price) || 0,
       total_items: Number(orderData.total_items) || 0,
       items: (orderData.items || []).map(item => ({

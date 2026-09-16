@@ -13,7 +13,7 @@ import type { ToastProp } from '../../interfaces/ui.interfaces';
 
 
 
-const Toast = ({ id, message,color}:ToastProp)=> {
+const Toast = ({ id, message, color, action}:ToastProp)=> {
   const { removeToast } = useToast();
   return (
     <motion.div
@@ -30,9 +30,20 @@ const Toast = ({ id, message,color}:ToastProp)=> {
           variant="soft"
           color={color}
           endDecorator={
-            <IconButton variant="soft" color={color} onClick={() => removeToast(id)}>
+            <div className="flex items-center gap-1">
+              {action && (
+                <button
+                  type="button"
+                  onClick={() => { action.onClick(); removeToast(id); }}
+                  className="font-semibold underline underline-offset-2 text-sm whitespace-nowrap"
+                >
+                  {action.label}
+                </button>
+              )}
+              <IconButton variant="soft" color={color} onClick={() => removeToast(id)}>
               <CloseRoundedIcon />
-            </IconButton>
+              </IconButton>
+            </div>
           }
         >
           <div>

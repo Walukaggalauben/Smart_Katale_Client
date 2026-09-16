@@ -131,7 +131,7 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
       order_type: formData.order_type || 'door_delivery',
       city: (formData.city || '').trim(),
       town: (formData.town || '').trim(),
-      address: (formData.address || '').trim(),
+      shipping_address: (formData.address || '').trim(),
       total_price: (totalAmount) || 0,
       total_items: Number(totalItems) || 0,
       items: itemsData
@@ -292,8 +292,21 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
               fullWidth
               onClick={() => setCheckOutForm(true)}
             >
-              Proceed to Checkout
+              Continue to Shipping
             </Button>
+
+            <Divider sx={{ my: 2 }} />
+            <Box sx={{ display: 'grid', gap: 0.8 }}>
+              <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
+                • Delivery details are collected securely at checkout
+              </Typography>
+              <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
+                • Review your order before placing it
+              </Typography>
+              <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
+                • Order confirmation is shown after successful submission
+              </Typography>
+            </Box>
           </Card>
         </Grid>
       </Grid>
