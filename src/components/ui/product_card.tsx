@@ -514,19 +514,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {inCart ? (
           <Box
             sx={{
-              display: 'flex',
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1fr) auto',
               alignItems: 'center',
-              gap: 0.75,
+              gap: 0.6,
+              width: '100%',
             }}
           >
             <ButtonGroup
               size="sm"
               variant="outlined"
               sx={{
-                flex: 1,
+                width: '100%',
                 minWidth: 0,
                 '& button': {
                   fontWeight: 800,
+                  minWidth: { xs: 28, sm: 34 },
+                  px: { xs: 0.45, sm: 0.8 },
                 },
               }}
             >
@@ -534,7 +538,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 color="danger"
                 variant="soft"
                 onClick={handleDecreaseQuantity}
-                sx={{ minWidth: 38 }}
+                sx={{ minWidth: { xs: 28, sm: 38 } }}
               >
                 −
               </Button>
@@ -543,7 +547,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 disabled
                 sx={{
                   flex: 1,
-                  minWidth: 40,
+                  minWidth: { xs: 30, sm: 40 },
+                  px: { xs: 0.45, sm: 0.8 },
                   color: '#173b2b !important',
                 }}
               >
@@ -554,7 +559,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 color="success"
                 variant="soft"
                 onClick={handleIncreaseQuantity}
-                sx={{ minWidth: 38 }}
+                sx={{ minWidth: { xs: 28, sm: 38 } }}
               >
                 +
               </Button>
@@ -569,12 +574,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 navigate('/cart');
               }}
               sx={{
-                minWidth: 0,
-                flex: 1.15,
+                minWidth: { xs: 64, sm: 78 },
+                width: { xs: 64, sm: 82 },
                 minHeight: 36,
-                px: { xs: 0.8, sm: 1.1 },
+                px: { xs: 0.45, sm: 0.8 },
                 borderRadius: 'md',
                 fontWeight: 900,
+                fontSize: { xs: '0.72rem', sm: '0.8rem' },
                 whiteSpace: 'nowrap',
               }}
             >
