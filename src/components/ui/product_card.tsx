@@ -200,6 +200,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
     };
 
     dispatch(addToCart(item));
+    // Flip the card CTA immediately so the customer gets a direct Cart shortcut
+    // without having to find the header cart icon.
+    setQuantity(1);
+    setInCart(true);
 
     addToast({
       message: 'Added to cart',
@@ -520,6 +524,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               variant="outlined"
               sx={{
                 flex: 1,
+                minWidth: 0,
                 '& button': {
                   fontWeight: 800,
                 },
@@ -555,6 +560,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
               </Button>
             </ButtonGroup>
 
+            <Button
+              color="success"
+              variant="solid"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/cart');
+              }}
+              sx={{
+                minWidth: 0,
+                flex: 1.15,
+                minHeight: 36,
+                px: { xs: 0.8, sm: 1.1 },
+                borderRadius: 'md',
+                fontWeight: 900,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              View Cart
+            </Button>
+
             <IconButton
               color="danger"
               variant="soft"
@@ -563,6 +589,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               sx={{
                 borderRadius: 'md',
               }}
+              aria-label="Remove from cart"
             >
               <DeleteOutline />
             </IconButton>
