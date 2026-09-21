@@ -282,7 +282,7 @@ const Home = () => {
           <Typography level="body-sm" sx={{ color: 'text.secondary', mb: 2 }}>Official product videos from the brands you shop.</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
             {[
-              { id: 'apple-iphone-air', brand: 'Apple', title: 'Introducing iPhone Air — Official Apple Video', href: 'https://www.youtube.com/watch?v=M0au92yebLQ', image: 'https://www.minifygadgets.com/catalogue/iphone-17-air-256gb.jpg' },
+              { id: 'apple-iphone-18-2026', brand: 'Apple', title: 'Apple Event September 2026 — iPhone 18 Pro & iPhone Duo', href: 'https://www.youtube.com/watch?v=39BalPDuTo0', image: 'https://i.ytimg.com/vi/39BalPDuTo0/hqdefault.jpg' },
               { id: 'samsung-unpacked-2026', brand: 'Samsung', title: 'Galaxy Unpacked July 2026 — Official Highlights', href: 'https://www.youtube.com/watch?v=9PTRQjP6yAQ', image: 'https://i.ytimg.com/vi/9PTRQjP6yAQ/hqdefault.jpg' },
             ].map((video) => (
               <Box
