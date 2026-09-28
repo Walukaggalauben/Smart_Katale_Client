@@ -174,49 +174,84 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 
       </Grid>
 
-      {/* feedback form */}
-     <Grid
-        container
-        columns={{md:2, xs:1}}
+      {/* Message us / contact CTA */}
+      <Box
         sx={{
-          width: '100%',
-          backgroundColor: '#414548'
+          position: 'relative',
+          overflow: 'hidden',
+          px: { xs: 1.5, sm: 3, md: 6 },
+          py: { xs: 4, md: 6 },
+          background: 'linear-gradient(135deg, #062f27 0%, #005b46 52%, #003b2f 100%)',
+          '&:before': {
+            content: '""', position: 'absolute', width: 280, height: 280, borderRadius: '50%',
+            right: -100, top: -140, background: 'rgba(255,255,255,.08)',
+          },
+          '&:after': {
+            content: '""', position: 'absolute', width: 220, height: 220, borderRadius: '50%',
+            left: -120, bottom: -130, background: 'rgba(37,211,102,.10)',
+          },
         }}
       >
-   
-        <Grid xs={1} sx={{ p: 2 }}>
-            <Typography component='h1' sx={{color:'white',marginBottom:'2px',textTransform:'capitalize',textAlign:'center',fontSize:'2rem',fontWeight:{md:800},fontFamily:"Alumni Sans Pinstripe"}}>Message Us</Typography>
-          <SmartForm
-            formControls={ContactUsFooterFormFields}
-           variant="solid"
-           formData={FeedBackFormData}
-           setFormData={setFeedBackFormData}
-           isLoading = {isloading}
-          buttonText= "SEND"
-          onSubmit={handleSubmit}
-          color="success"
-          message="Sending"
-    
-          isBtnDisabled={!isFormValid()}
-          />
-        </Grid>
-        <Grid xs={1} sx={{ 
-          transition:'.3s all ease',
-          cursor:'pointer',
-          scale:.95,
-          opacity:.6,
-          borderRadius:'3px',
-         ':hover':{
-scale:1,
-opacity:.9
-         },
-          display: {xs:'none', md:'flex'}, 
+        <Box sx={{ position: 'relative', zIndex: 1, maxWidth: 1180, mx: 'auto' }}>
+          <Box sx={{ textAlign: 'center', mb: 3.5 }}>
+            <Typography sx={{ color: '#8ff0c5', fontWeight: 900, fontSize: { xs: '.75rem', md: '.85rem' }, letterSpacing: '2px', textTransform: 'uppercase' }}>
+              We are here to help
+            </Typography>
+            <Typography component='h2' sx={{ color: 'white', mt: .6, fontSize: { xs: '2rem', md: '3rem' }, lineHeight: 1.05, fontWeight: 900 }}>
+              Message Us
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,.78)', maxWidth: 650, mx: 'auto', mt: 1, fontSize: { xs: '.92rem', md: '1rem' } }}>
+              Need a price, product recommendation or help with your order? Talk to the Minify Gadgets team directly.
+            </Typography>
+          </Box>
 
+          <Grid container spacing={2.5} alignItems="stretch">
+            <Grid xs={12} md={7}>
+              <Card sx={{ height: '100%', borderRadius: '24px', background: 'rgba(255,255,255,.97)', boxShadow: '0 18px 50px rgba(0,0,0,.20)', border: '1px solid rgba(255,255,255,.35)' }}>
+                <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                  <Typography sx={{ fontWeight: 900, color: '#073f32', fontSize: '1.25rem', mb: 1.5 }}>
+                    Send us a message
+                  </Typography>
+                  <SmartForm
+                    formControls={ContactUsFooterFormFields}
+                    variant="solid"
+                    formData={FeedBackFormData}
+                    setFormData={setFeedBackFormData}
+                    isLoading={isloading}
+                    buttonText="SEND MESSAGE"
+                    onSubmit={handleSubmit}
+                    color="success"
+                    message="Sending"
+                    isBtnDisabled={!isFormValid()}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
 
-        }}>
-          <img src={Contact} alt="contact_us" className="w-full"/>
-        </Grid>
-      </Grid>
+            <Grid xs={12} md={5}>
+              <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Box sx={{ flex: 1, minHeight: { xs: 150, md: 190 }, borderRadius: '24px', overflow: 'hidden', position: 'relative', boxShadow: '0 18px 50px rgba(0,0,0,.20)', border: '1px solid rgba(255,255,255,.2)' }}>
+                  <img src={Contact} alt="Contact Minify Gadgets" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 25%, rgba(0,35,28,.82) 100%)', display: 'flex', alignItems: 'flex-end', p: 2.2 }}>
+                    <Typography sx={{ color: 'white', fontWeight: 800 }}>Real people. Real help. Real gadgets.</Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                  <Box component="a" href="https://wa.me/256787808501?text=Hello%20Minify%20Gadgets!%20I%20need%20help%20with%20a%20product." target="_blank" rel="noopener noreferrer" sx={{ textDecoration: 'none', color: 'white', p: 1.8, borderRadius: '18px', background: '#25D366', display: 'flex', alignItems: 'center', gap: 1.1, boxShadow: '0 10px 24px rgba(0,0,0,.16)', transition: 'transform .2s ease', '&:hover': { transform: 'translateY(-3px)' } }}>
+                    <FaWhatsapp size={25} />
+                    <Box><Typography sx={{ color: 'white', fontWeight: 900, fontSize: '.9rem' }}>WhatsApp</Typography><Typography sx={{ color: 'rgba(255,255,255,.9)', fontSize: '.72rem' }}>Chat with us</Typography></Box>
+                  </Box>
+                  <Box component="a" href="tel:256787808501" sx={{ textDecoration: 'none', color: 'white', p: 1.8, borderRadius: '18px', background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.18)', display: 'flex', alignItems: 'center', gap: 1.1, transition: 'transform .2s ease, background .2s ease', '&:hover': { transform: 'translateY(-3px)', background: 'rgba(255,255,255,.18)' } }}>
+                    <FaPhoneAlt size={21} />
+                    <Box><Typography sx={{ color: 'white', fontWeight: 900, fontSize: '.9rem' }}>Call Us</Typography><Typography sx={{ color: 'rgba(255,255,255,.75)', fontSize: '.72rem' }}>Tap to call</Typography></Box>
+                  </Box>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
       
 
 </Box>
