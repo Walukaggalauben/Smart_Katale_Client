@@ -215,12 +215,12 @@ const Home = () => {
         </Box>
 
         {/* =====================================================
-            IPHONE 18 PRO PRE-ORDER
+            IPHONE 18 PRO SERIES — AVAILABLE NOW
         ===================================================== */}
         <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 1.5, md: 4 }, mb: 6 }}>
           <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: { xs: '22px', md: '30px' }, bgcolor: '#0b0d0c', color: '#fff', px: { xs: 2.5, sm: 4, md: 6 }, py: { xs: 3.5, md: 5 }, boxShadow: '0 16px 45px rgba(0,0,0,.16)' }}>
             <Box sx={{ position: 'absolute', width: 260, height: 260, borderRadius: '50%', bgcolor: 'rgba(255,255,255,.06)', right: -80, top: -100 }} />
-            <Chip color="danger" variant="solid" sx={{ fontWeight: 900 }}>PRE-ORDER</Chip>
+            <Chip color="danger" variant="solid" sx={{ fontWeight: 900 }}>AVAILABLE NOW</Chip>
             <Typography level="h2" sx={{ color: '#fff', fontWeight: 950, mt: 1.5, fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3.2rem' } }}>iPhone 18 Pro Series</Typography>
             <Typography level="body-lg" sx={{ color: 'rgba(255,255,255,.78)', maxWidth: 760, mt: 1 }}>iPhone 18 Pro and iPhone 18 Pro Max. A20 Pro, variable-aperture 48MP Fusion Main camera, and the next generation of Apple Intelligence.</Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2.2 }}>
@@ -228,33 +228,33 @@ const Home = () => {
               {['Black', 'Silver', 'Glacier', 'Burgundy'].map((color) => <Chip key={color} variant="soft" sx={{ bgcolor: 'rgba(255,255,255,.1)', color: '#fff' }}>{color}</Chip>)}
             </Box>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', mt: 3 }}>
-              <Button size="lg" color="success" onClick={handleWhatsAppOrder} sx={{ borderRadius: '999px', fontWeight: 900 }}>Reserve on WhatsApp</Button>
-              <Typography level="body-sm" sx={{ color: 'rgba(255,255,255,.68)' }}>Pre-orders open September 12 • Availability starts September 18</Typography>
+              <Button size="lg" color="success" onClick={handleWhatsAppOrder} sx={{ borderRadius: '999px', fontWeight: 900 }}>Order on WhatsApp</Button>
+              <Typography level="body-sm" sx={{ color: 'rgba(255,255,255,.68)' }}>Available now • HK Active — 1 Nano SIM + 1 eSIM</Typography>
             </Box>
           </Box>
         </Box>
 
         {/* =====================================================
-            IPHONE 18 PRE-ORDER PRODUCTS
+            IPHONE 18 AVAILABLE PRODUCTS
         ===================================================== */}
         {(() => {
-          const preorderProducts = (products || [])
+          const availableProducts = (products || [])
             .filter((p: any) => /iphone 18|iphone duo/i.test(String(p.name || '')))
             .sort((a: any, b: any) => {
               const rank = (name: string) => /iphone 18 pro max/i.test(name) ? 1 : /iphone 18 pro/i.test(name) ? 0 : 2;
               return rank(String(a.name || '')) - rank(String(b.name || ''));
             });
 
-          if (!preorderProducts.length) return null;
+          if (!availableProducts.length) return null;
 
           return (
             <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 1.5, md: 4 }, mb: 6 }}>
               <Box sx={{ mb: 2 }}>
-                <Typography level="h2" sx={{ fontWeight: 900 }}>iPhone 18 Pre-order</Typography>
-                <Typography level="body-md" sx={{ color: 'text.secondary', mt: .5 }}>Reserve the latest Pro models and iPhone Duo using the actual catalogue images.</Typography>
+                <Typography level="h2" sx={{ fontWeight: 900 }}>iPhone 18 — Available Now</Typography>
+                <Typography level="body-md" sx={{ color: 'text.secondary', mt: .5 }}>Shop the latest Pro models using the current Minify Gadgets prices and catalogue images.</Typography>
               </Box>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2,minmax(0,1fr))', sm: 'repeat(2,minmax(0,1fr))', md: 'repeat(3,minmax(0,1fr))' }, gap: { xs: 1.25, sm: 2.5 } }}>
-                {preorderProducts.slice(0, 3).map((p: any) => (
+                {availableProducts.slice(0, 3).map((p: any) => (
                   <ProductCard
                     key={p.id}
                     id={p.id}
@@ -266,7 +266,7 @@ const Home = () => {
                     rating={p.rating}
                     reviews_count={p.reviews_count}
                     views_count={p.views_count}
-                    status="Pre-order"
+                    status="Brand new"
                   />
                 ))}
               </Box>

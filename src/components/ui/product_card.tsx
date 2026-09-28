@@ -46,15 +46,15 @@ const FALLBACK_IMAGE =
 const cleanDescription = (value?: string) => {
   if (!value) return '';
   const decoded = value
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<\/p>\s*<p>/gi, ' ')
-    .replace(/<[^>]*>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
     .replace(/&lt;/gi, '<')
     .replace(/&gt;/gi, '>')
     .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'");
+    .replace(/&#39;/gi, "'")
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/p>\s*<p>/gi, ' ')
+    .replace(/<[^>]*>/gi, ' ');
   return decoded.replace(/\s+/g, ' ').trim();
 };
 
@@ -83,7 +83,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const [inCart, setInCart] = useState(!!cartItem);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 1);
-  const [resolvedImage, setResolvedImage] = useState(FALLBACK_IMAGE);
   const inCompare = compareItems.some((item) => String(item.id) === String(id));
 
   useEffect(() => {
@@ -136,13 +135,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
     return `${baseUrl}/media/${cleanPath}`;
   };
 
-  useEffect(() => {
-    const candidate = getImageUrl();
-    setResolvedImage(candidate);
-  }, [image]);
+  const imageUrl = getImageUrl();
 
-  const handleImageError = () => {
-    setResolvedImage(FALLBACK_IMAGE);
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = event.currentTarget;
+    if (target.src !== FALLBACK_IMAGE) {
+      target.src = FALLBACK_IMAGE;
+    }
   };
 
   const handleCardClick = () => {
@@ -319,7 +318,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           }}
         >
           <img
-            src={resolvedImage}
+            src={imageUrl}
             alt={name || 'Product'}
             loading={status.toLowerCase() === 'pre-order' ? 'eager' : 'lazy'}
             onError={handleImageError}

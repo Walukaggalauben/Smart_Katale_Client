@@ -47,6 +47,54 @@ const FALLBACK_IMAGE =
     </svg>
   `);
 
+const IPHONE_18_PRICING: Record<string, Record<string, number>> = {
+  'iPhone 18 Pro': {
+    'Burgundy|256GB': 7400000,
+    'Glacier|256GB': 7330000,
+    'Black|256GB': 7300000,
+    'Silver|256GB': 7300000,
+    'Burgundy|512GB': 8300000,
+    'Glacier|512GB': 8300000,
+    'Black|512GB': 8250000,
+    'Silver|512GB': 8200000,
+  },
+  'iPhone 18 Pro Max': {
+    'Burgundy|256GB': 9600000,
+    'Glacier|256GB': 9500000,
+    'Black|256GB': 9500000,
+    'Silver|256GB': 9500000,
+    'Burgundy|512GB': 10200000,
+    'Glacier|512GB': 10100000,
+    'Black|512GB': 10100000,
+    'Silver|512GB': 10100000,
+    'Burgundy|1TB': 13300000,
+    'Glacier|1TB': 13200000,
+    'Black|1TB': 13200000,
+    'Silver|1TB': 13200000,
+    'Burgundy|2TB': 14900000,
+    'Glacier|2TB': 14800000,
+    'Black|2TB': 14800000,
+    'Silver|2TB': 14800000,
+  },
+};
+
+const cleanDescription = (value?: string) => {
+  if (!value) return '';
+  return value
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6])>/gi, '\n')
+    .replace(/<[^>]*>/gi, '')
+    .replace(/\n\s*\n\s*/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+};
+
 const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -61,6 +109,8 @@ const ProductDetails: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [selectedStorage, setSelectedStorage] = useState('256GB');
+  const [selectedColor, setSelectedColor] = useState('Black');
   const touchStartX = useRef<number | null>(null);
   const touchDeltaX = useRef(0);
 
@@ -202,19 +252,6 @@ const ProductDetails: React.FC = () => {
       });
   }, [product, products]);
 
-  const storageOptions = useMemo(() => {
-    if (!product) return [];
-    const all = [product, ...variantProducts];
-    const seen = new Set<string>();
-    return all.reduce<Product[]>((result, item) => {
-      const storage = extractStorage(item.name || '');
-      if (!storage || seen.has(storage)) return result;
-      seen.add(storage);
-      result.push(item);
-      return result;
-    }, []);
-  }, [product, variantProducts]);
-
   const galleryImages = useMemo(() => {
     const own = images;
     const familyImages = variantProducts
@@ -247,7 +284,18 @@ const ProductDetails: React.FC = () => {
     touchDeltaX.current = 0;
   };
 
-  const price = Number(product?.price || 0);
+  const iphone18Model = product?.name && IPHONE_18_PRICING[product.name]
+    ? product.name
+    : '';
+  const iphone18Prices = iphone18Model ? IPHONE_18_PRICING[iphone18Model] : {};
+  const iphone18Storages = iphone18Model === 'iPhone 18 Pro Max'
+    ? ['256GB', '512GB', '1TB', '2TB']
+    : iphone18Model === 'iPhone 18 Pro'
+      ? ['256GB', '512GB']
+      : [];
+  const iphone18Colors = ['Burgundy', 'Glacier', 'Black', 'Silver'];
+  const selectedIphone18Price = iphone18Prices[selectedColor + '|' + selectedStorage];
+  const price = Number(selectedIphone18Price || product?.price || 0);
   const discount = Number(product?.discount || 0);
 
   const discountedPrice =
@@ -266,8 +314,13 @@ const ProductDetails: React.FC = () => {
       price: product.price || 0,
       quantity,
       discount: product.discount || 0,
-      image: getImageUrl(product.image_url),
+      image: getImageUrl(product.source_image_url || product.image_url),
     };
+
+    if (iphone18Model) {
+      item.name = product.name + ' ' + selectedStorage + ' — ' + selectedColor;
+      item.price = price;
+    }
 
     dispatch(addToCart(item));
 
@@ -667,33 +720,7 @@ const ProductDetails: React.FC = () => {
               </Box>
             )}
 
-            {storageOptions.length > 1 && (
-              <Box sx={{ px: 1.5, pb: 1.5 }}>
-                <Typography level="body-sm" sx={{ fontWeight: 800, mb: 0.75 }}>
-                  Storage
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-                  {storageOptions.map((option) => {
-                    const storage = extractStorage(option.name || '');
-                    const active = option.id.toString() === product.id.toString();
-                    return (
-                      <Button
-                        key={option.id.toString()}
-                        size="sm"
-                        variant={active ? 'solid' : 'outlined'}
-                        color="success"
-                        onClick={() => {
-                          if (!active) navigate(`/product-details/${option.id}`);
-                        }}
-                        sx={{ borderRadius: 'md', fontWeight: 800 }}
-                      >
-                        {storage}
-                      </Button>
-                    );
-                  })}
-                </Box>
-              </Box>
-            )}
+            {/* iPhone 18 storage and colour selectors are shown in the purchase panel. */}
           </Card>
         </Grid>
 
@@ -846,6 +873,62 @@ const ProductDetails: React.FC = () => {
               )}
             </Box>
 
+            {iphone18Model && (
+              <Sheet
+                variant="outlined"
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  borderRadius: 'lg',
+                  borderColor: 'success.200',
+                  bgcolor: 'success.50',
+                }}
+              >
+                <Typography level="title-md" sx={{ fontWeight: 900, mb: 1.25 }}>
+                  Choose your storage
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 1.75 }}>
+                  {iphone18Storages.map((storage) => (
+                    <Button
+                      key={storage}
+                      size="sm"
+                      variant={selectedStorage === storage ? 'solid' : 'outlined'}
+                      color="success"
+                      onClick={() => setSelectedStorage(storage)}
+                      sx={{ borderRadius: 'md', fontWeight: 900, minWidth: 78 }}
+                    >
+                      {storage}
+                    </Button>
+                  ))}
+                </Box>
+
+                <Typography level="title-sm" sx={{ fontWeight: 900, mb: 0.9 }}>
+                  Choose your colour
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                  {iphone18Colors.map((color) => (
+                    <Button
+                      key={color}
+                      size="sm"
+                      variant={selectedColor === color ? 'solid' : 'outlined'}
+                      color="success"
+                      onClick={() => setSelectedColor(color)}
+                      sx={{ borderRadius: 'md', fontWeight: 800 }}
+                    >
+                      {color}
+                    </Button>
+                  ))}
+                </Box>
+
+                <Typography level="body-sm" sx={{ color: 'text.secondary', mt: 1.25 }}>
+                  {selectedStorage} • {selectedColor} • HK Active — 1 Nano SIM + 1 eSIM
+                </Typography>
+                <Typography level="title-lg" sx={{ color: '#004526', fontWeight: 950, mt: 0.5 }}>
+                  UGX {price.toLocaleString()}
+                </Typography>
+              </Sheet>
+            )}
+
             <Divider sx={{ my: 3 }} />
 
             {/* Benefits */}
@@ -944,9 +1027,10 @@ const ProductDetails: React.FC = () => {
                   sx={{
                     color: 'text.secondary',
                     lineHeight: 1.7,
+                    whiteSpace: 'pre-line',
                   }}
                 >
-                  {product.description}
+                  {cleanDescription(product.description)}
                 </Typography>
               </Box>
             )}

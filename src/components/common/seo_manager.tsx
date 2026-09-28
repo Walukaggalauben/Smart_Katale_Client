@@ -141,7 +141,17 @@ function productSchema(product: Product, canonicalUrl: string) {
   const price = Number(product.price);
   const brand = getBrand(product);
   const images = getProductImage(product);
-  const description = String(product.description || `${product.name || "Phone"} available from MINIFY GADGETS in Uganda.`).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1000);
+  const description = String(product.description || `${product.name || "Phone"} available from MINIFY GADGETS in Uganda.`)
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 1000);
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -186,11 +196,21 @@ export default function SeoManager() {
       description = "Shop phones, iPhones, Samsung, accessories and electronics from MINIFY GADGETS, a Ugandan retailer in Kampala. Browse prices, products and deals online.";
     } else if (pathname === "/iphone-18-series") {
       title = "iPhone 18 Series Uganda | MINIFY GADGETS";
-      description = "Explore the iPhone 18 series at MINIFY GADGETS in Uganda. View available models, preorder information and product details.";
+      description = "Explore the iPhone 18 series at MINIFY GADGETS in Uganda. View available models, current prices and product details.";
     } else if (product) {
       const brand = getBrand(product);
       title = `${product.name || "Phone"} | ${SITE_NAME}`;
-      description = String(product.description || `Buy ${product.name || "this phone"} from ${SITE_NAME} in Uganda. View price, availability and product details.`).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+      description = String(product.description || `Buy ${product.name || "this phone"} from ${SITE_NAME} in Uganda. View price, availability and product details.`)
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 160);
       canonical = `${SITE_URL}/product-details/${encodeURIComponent(String(product.id))}`;
       if (brand) description = `${product.name} — ${brand} phone available from ${SITE_NAME} in Uganda. View price, availability and details.`.slice(0, 160);
     } else if (productMatch) {
